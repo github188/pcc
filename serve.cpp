@@ -8,6 +8,7 @@
 #include "nplog.h"
 #include "rpc_serve.h"
 #include "NP_SCATTEREDSession.h"
+#include "pcc_startup.h"
 
 int g_majorVer = 1;
 int g_minorVer = 0;
@@ -20,7 +21,7 @@ char g_compileNumInfo[32] =
 };
 BOOL g_exitFlag = false;
 
-IPP g_serveIPP = IPP(INADDR_ANY, 2011);
+IPP g_serveIPP = IPP(INADDR_ANY, 9011);
 
 static void LogPrint__(void* /*param*/, const char* txt)
 	{	NPLogInfo(("%s", txt));	}
@@ -56,6 +57,18 @@ int main(int argc, const char* argv[])
 		}
 	}
 	g_serveIPP.port_ = tcpPort;
+	
+	//用户定义_S
+
+	CPCC_Startup pcc;
+	int rt_st = pcc.Startup();
+	if(rt_st < 0)
+	{
+		return rt_st;
+	}
+	//
+
+	//用户定义_E
 
 	// 设置基本系统参数
 #if defined(WIN32)

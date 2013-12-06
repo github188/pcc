@@ -6,7 +6,7 @@
 #include "NP_SCATTEREDSession.h"
 #include "ipcvt.h"
 #include "nplog.h"
-
+#include "singleton.h"
 /////////////////////////////////////////////////////////////////////
 // interface GRID_User
 
@@ -191,8 +191,10 @@ TCPSError GRID_User_S::Login(
 				IN const tcps_String& password
 				) method
 {
-	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	IPP ipp("127.0.0.1.9012", 0);
+	TCPSError ret = this->SetRedirect_(ipp, NULL, 0);
+	ret;
+	return TCPS_OK;	
 }
 
 TCPSError GRID_User_S::Logout(
@@ -343,6 +345,7 @@ TCPSError PCC_Scatter_S::OnConnected(
 	// TODO: 请添加接口PCC_Scatter的连接后处理
 
 	NPLogInfo(("PCC_Scatter_S::OnConnected(%d, %s, %d)", sessionKey, IPP_TO_STR_A(peerID_IPP), sessionCount));
+	m_skey = sessionKey;
 	return TCPS_OK;
 }
 
@@ -357,6 +360,8 @@ void PCC_Scatter_S::OnPostingCallReady()
 {
 	// TODO: 请添加接口PCC_Scatter的posting回调就绪处理
 
+	printf("插入新节点%d\n",m_skey);
+	pgrid_util::Singleton<CScatteredManage>::instance().pushNode(m_skey,this);
 	NPLogInfo(("PCC_Scatter_S::OnPostingCallReady()"));
 }
 
@@ -378,6 +383,7 @@ void PCC_Scatter_S::OnClose(
 {
 	NPLogInfo(("PCC_Scatter_S::OnClose(%d, %s, %s(%d))", sessionKey, IPP_TO_STR_A(peerID_IPP), tcps_GetErrTxt(cause), cause));
 	// TODO: 请添加接口PCC_Scatter的连接关闭处理
+	pgrid_util::Singleton<CScatteredManage>::instance().diableNode(sessionKey);
 }
 
 TCPSError PCC_Scatter_S::OnComputed(
@@ -386,8 +392,12 @@ TCPSError PCC_Scatter_S::OnComputed(
 				IN const tcps_Binary& context
 				) posting_method
 {
-	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	//放回可调度队列
+	printf("放回旧节点%d\n",m_skey);
+	pgrid_util::Singleton<CScatteredManage>::instance().pushNode(m_skey,this);
+
+	//回调sevice接口的OnExecuted()	
+	return m_ss->OnExecuted(taskKey,errorCode,context);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -414,6 +424,7 @@ TCPSError PCC_Service_S::OnConnected(
 	// TODO: 请添加接口PCC_Service的连接后处理
 
 	NPLogInfo(("PCC_Service_S::OnConnected(%d, %s, %d)", sessionKey, IPP_TO_STR_A(peerID_IPP), sessionCount));
+	m_handler.SetSenssion(this);
 	return TCPS_OK;
 }
 
@@ -449,21 +460,21 @@ void PCC_Service_S::OnClose(
 {
 	NPLogInfo(("PCC_Service_S::OnClose(%d, %s, %s(%d))", sessionKey, IPP_TO_STR_A(peerID_IPP), tcps_GetErrTxt(cause), cause));
 	// TODO: 请添加接口PCC_Service的连接关闭处理
+	m_handler.OnClose(sessionKey,peerID_IPP,cause);
 }
 
 TCPSError PCC_Service_S::Login(
 				IN const tcps_String& ticket
 				) method
 {
-	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return m_handler.Login(ticket);
 }
 
 TCPSError PCC_Service_S::Logout(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return m_handler.Logout();
 }
 
 TCPSError PCC_Service_S::ListModules(
@@ -472,7 +483,7 @@ TCPSError PCC_Service_S::ListModules(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return m_handler.ListModules(moduleType,modulesInfo);
 }
 
 TCPSError PCC_Service_S::GetModuleFile(
@@ -494,7 +505,7 @@ TCPSError PCC_Service_S::Execute(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return m_handler.Execute(moduleKey,inputUrl,outputUrl,moduleParams,jobKey);
 }
 
 TCPSError PCC_Service_S::QueryJobs(
@@ -503,7 +514,7 @@ TCPSError PCC_Service_S::QueryJobs(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return m_handler.QueryJobs(jobsKey,jobsState);
 }
 
 TCPSError PCC_Service_S::CancelJob(
@@ -511,7 +522,7 @@ TCPSError PCC_Service_S::CancelJob(
 				) posting_method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return m_handler.CancelJob(jobKey);
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -538,6 +549,8 @@ TCPSError PCC_Toolkit_S::OnConnected(
 	// TODO: 请添加接口PCC_Toolkit的连接后处理
 
 	NPLogInfo(("PCC_Toolkit_S::OnConnected(%d, %s, %d)", sessionKey, IPP_TO_STR_A(peerID_IPP), sessionCount));
+	m_handler.SetSenssion(NULL);//注意这里为NULL
+
 	return TCPS_OK;
 }
 
@@ -573,6 +586,7 @@ void PCC_Toolkit_S::OnClose(
 {
 	NPLogInfo(("PCC_Toolkit_S::OnClose(%d, %s, %s(%d))", sessionKey, IPP_TO_STR_A(peerID_IPP), tcps_GetErrTxt(cause), cause));
 	// TODO: 请添加接口PCC_Toolkit的连接关闭处理
+	m_handler.OnClose(sessionKey,peerID_IPP,cause);
 }
 
 TCPSError PCC_Toolkit_S::Login(
@@ -580,14 +594,14 @@ TCPSError PCC_Toolkit_S::Login(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return m_handler.Login(ticket);
 }
 
 TCPSError PCC_Toolkit_S::Logout(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return m_handler.Logout();
 }
 
 TCPSError PCC_Toolkit_S::AddModule(
@@ -597,7 +611,7 @@ TCPSError PCC_Toolkit_S::AddModule(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return m_handler.AddModule(moduleProperty,moudleFiles,moduleKey);
 }
 
 TCPSError PCC_Toolkit_S::AddModuleFile(
@@ -615,7 +629,7 @@ TCPSError PCC_Toolkit_S::RemoveModule(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return m_handler.RemoveModule(moduleKey);	
 }
 
 TCPSError PCC_Toolkit_S::RemoveModuleFiles(
@@ -632,5 +646,5 @@ TCPSError PCC_Toolkit_S::ListModules(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return m_handler.ListModules(modulesInfo);
 }

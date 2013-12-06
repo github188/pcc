@@ -20,6 +20,8 @@
 #include "iscm_helper.h"
 #include "iscm_smart_container.h"
 #include "NP_SCATTEREDTypesDefine.h"
+#include "my_np_griduserclient.h"
+#include "modulemanage.h"
 
 class NP_SCATTEREDSession;
 
@@ -522,7 +524,8 @@ private:
 
 public:
 	// TODO: 可以在此处添加PCC_Scatter的自定义成员
-
+	PCC_Service_S* m_ss;
+	INT32 m_skey;
 private:
 	PCC_Scatter_S(NP_SCATTEREDSessionMaker& sessionMaker, NP_SCATTEREDSession* sessionR, IPCC_Scatter_LocalCallback* sessionL);
 	~PCC_Scatter_S();
@@ -929,7 +932,7 @@ private:
 
 public:
 	// TODO: 可以在此处添加PCC_Service的自定义成员
-
+	CPCCHandler m_handler;
 private:
 	PCC_Service_S(NP_SCATTEREDSessionMaker& sessionMaker, NP_SCATTEREDSession* sessionR, IPCC_Service_LocalCallback* sessionL);
 	~PCC_Service_S();
@@ -1289,7 +1292,7 @@ private:
 
 public:
 	// TODO: 可以在此处添加PCC_Toolkit的自定义成员
-
+	CPCCHandler m_handler;
 private:
 	PCC_Toolkit_S(NP_SCATTEREDSessionMaker& sessionMaker, NP_SCATTEREDSession* sessionR, IPCC_Toolkit_LocalCallback* sessionL);
 	~PCC_Toolkit_S();

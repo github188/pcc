@@ -270,6 +270,11 @@ int CScatteredManage::processJobs()
 	}
 	return 0;
 }
+
+CPCCHandler::CPCCHandler()
+{
+
+}
 CPCCHandler::CPCCHandler(void* session)
 {
 	m_psenssion= (PCC_Service_S *)session;
@@ -278,7 +283,10 @@ CPCCHandler::~CPCCHandler()
 {
 	
 }
-
+void CPCCHandler::SetSenssion(void* session)
+{
+	m_psenssion= (PCC_Service_S *)session;
+}
 TCPSError CPCCHandler::OnConnected(
 					  IN INT32 sessionKey,
 					  IN const IPP& peerID_IPP,

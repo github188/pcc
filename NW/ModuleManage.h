@@ -4,8 +4,8 @@
 #include "Ilocker.h"
 #include <map>
 #include <queue>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
+//#include <boost/shared_ptr.hpp>
+//#include <boost/enable_shared_from_this.hpp>
 #include "my_np_griduserclient.h"
 #include "npfdk.h"
 #include "strtmpl.h"
@@ -233,10 +233,11 @@ private:
 };
 
 
-class CPCCHandler:public boost::enable_shared_from_this<CPCCHandler>
+class CPCCHandler//:public boost::enable_shared_from_this<CPCCHandler>
 {
 public:
 	CPCCHandler(void* session);
+	CPCCHandler();
 	~CPCCHandler();
 
 	TCPSError OnConnected(
@@ -288,7 +289,8 @@ public:
 	TCPSError RemoveModule(
 		IN INT64 moduleKey
 		) ;
-
+public:
+	void SetSenssion(void* session);
 private:
 	MY_NP_GridUserClient m_gridConn;
 	IPP m_client_ipp;
