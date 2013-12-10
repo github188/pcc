@@ -206,6 +206,32 @@ BOOL CScatteredManage::getModules(PCC_ModuleIndex &index,tcps_Array<PCC_ModuleFi
 	}
 	return false;
 }
+TCPSError  CScatteredManage::callbackSS(INT64 jk,IN INT64 taskKey,
+				IN TCPSError errorCode,
+				IN const tcps_Binary& context)///////
+{
+	TCPSError rt = TCPS_OK;
+	PCC_Service_S* second =NULL;
+	{
+		CNPAutoLock lock(m_locker_job_service);
+		std::map<INT64,PCC_Service_S*>::const_iterator it = m_job_service.find(jk);
+		if(it != m_job_service.end())//可能为空
+		{
+
+			second = it->second;
+			m_job_service.erase(jk);///
+			//return true;
+		}
+		else
+		{
+			printf("warn:#####%s,%lld,%p,%d\n",__FUNCTION__,jk,second,m_job_service.size());
+		}
+	}
+	
+	if(second)
+		rt = second->OnExecuted(taskKey,errorCode,context);
+	return rt;
+}
 int CScatteredManage::processJobs()
 {
 	SCNode nd;
@@ -225,14 +251,23 @@ int CScatteredManage::processJobs()
 		//检测job队列
 		if(popJob(sj))
 		{
+			
 			printf("当前可调度节点数：%d,待处理作业数：%d\n",getNodeCounts(),getJobsCounts()+1);
+
+			//先判断jobkey对应的会话是否有效 //这一步看需求，是否支持不要回调通知的作业提交，这里标志以回调有效的方式处理
+            if(!isValidJobRequest(sj.jobKey))
+				continue;//忽略
+
 			while(1)//轮询等待有空余节点可做scattered计算
 			{
 				
 				if(popNode(nd))// 注意节点要在作业处理完后收回
 				{
+				    
+					//nd.ps->m_ss = sj.ss;//回调senssion句柄 要是m_ss的servece_s的客户端断开了连接，这个指针会失效//jobkey
 					
-					nd.ps->m_ss = sj.ss;//回调senssion句柄
+                    
+					nd.ps->m_jobkey = sj.jobKey;
 					index.moduleKey = sj.moduleKey;
 					//确保节点端存在 moduleKey指定的模块
 					moudleFiles.Release();
@@ -244,6 +279,8 @@ int CScatteredManage::processJobs()
 							//再次调用接口
 							if(nd.ps->AddMoudle(index,moudleFiles) != TCPS_OK)
 							{
+								nd.ps->m_ss = NULL;//for mark
+								pushNode(nd.key,nd.ps);
 								NPLogError(("模块更新失败，作业无法调度\n"));
 								break;
 							}
@@ -257,8 +294,8 @@ int CScatteredManage::processJobs()
 					sj.info.dataInputUrl,
 					sj.info.dataOutputUrl,
 					sj.info.programParam);
-					nd.ps->AddMoudle(index,moudleFiles);
-					nd.ps->RemoveModule(0);
+					//nd.ps->AddMoudle(index,moudleFiles);
+					//nd.ps->RemoveModule(0);
 				
 					break;
 				}
@@ -286,6 +323,7 @@ CPCCHandler::~CPCCHandler()
 void CPCCHandler::SetSenssion(void* session)
 {
 	m_psenssion= (PCC_Service_S *)session;
+	printf("%s,%p\n",__FUNCTION__,m_psenssion);
 }
 TCPSError CPCCHandler::OnConnected(
 					  IN INT32 sessionKey,
@@ -370,6 +408,14 @@ TCPSError CPCCHandler::Execute(
 			sj.moduleKey = moduleKey;
 			sj.info = jobinfo;
 			sj.jobKey = jobKey = modules.generateJobkey();
+			//int a = (int)m_psenssion;
+			printf("%s,%lld,%p\n",__FUNCTION__,jobKey,m_psenssion);
+			pgrid_util::Singleton<CScatteredManage>::instance().pushSS(jobKey,m_psenssion);//m_psenssion在此刻定有效
+			bool isFound;
+			PCC_Service_S *tempp= pgrid_util::Singleton<CScatteredManage>::instance().getSS(jobKey,isFound);
+			printf("getSS:%d,%p\n",isFound,tempp);
+			m_psenssion->m_que_jobkeys.push(jobKey);
+			
 			modules.pushJob(sj);
             return TCPS_OK;
 		}

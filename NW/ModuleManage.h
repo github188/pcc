@@ -155,6 +155,64 @@ public:
 		}
 		return false;	  
 	}
+	////////////////////////////////////////////////////////
+	void clearInvalidJobs(std::queue<INT64> & q)
+	{
+		INT64 k = -1;
+		CNPAutoLock lock(m_locker_job_service);
+		while(!q.empty())
+		{
+            k =q.front();
+			q.pop();
+			m_job_service.erase(k);
+		}
+
+	}
+
+	void pushSS(INT64 jk,PCC_Service_S * ss)
+	{
+        CNPAutoLock lock(m_locker_job_service);
+		printf("%s,%lld,%p\n",__FUNCTION__,jk,ss);
+		m_job_service.insert(std::make_pair(jk,ss));
+
+	}
+	bool isValidJobRequest(INT64 jk)
+	{
+		CNPAutoLock lock(m_locker_job_service);
+		std::map<INT64,PCC_Service_S*>::const_iterator it = m_job_service.find(jk);
+		if(it != m_job_service.end())//可能为空
+			return true;
+		return false;
+	}
+	PCC_Service_S * getSS(INT64 jk,bool& isFound)
+	{
+		isFound = false;
+		CNPAutoLock lock(m_locker_job_service);
+		std::map<INT64,PCC_Service_S*>::const_iterator it = m_job_service.find(jk);
+		if(it != m_job_service.end())//可能为空
+		{
+			isFound = true;
+			return it->second;
+		}
+		return NULL;
+	}
+	TCPSError callbackSS(INT64 jk,IN INT64 taskKey,
+			IN TCPSError errorCode,
+			IN const tcps_Binary& context);
+		/*{
+	        CNPAutoLock lock(m_locker_job_service);
+			std::map<INT64,PCC_Service_S*>::const_iterator it = m_job_service.find(jk);
+			if(it != m_job_service.end())//可能为空
+			{
+				
+				it->second->OnExecuted(taskKey,errorCode,context);
+				m_job_service.erase(jk);///
+				//return true;
+			}
+		}*/
+	
+	/////////////////////////////////////////////////////////
+
 	void diableNode(INT32 key)
 	{
         CNPAutoLock lock(m_lock_deque);
@@ -225,7 +283,8 @@ public:
 private:
 	std::map<INT32,PCC_Scatter_S*> m_nodes;//iscm会保证这个指针的有效性
 	CLocker m_lock_deque;
-
+	std::map<INT64,PCC_Service_S*> m_job_service;//service提交作业，待处理的会话
+	CLocker m_locker_job_service;
 private:
 	std::queue<SCJob> m_jobs;
 	CLocker m_lock_job;

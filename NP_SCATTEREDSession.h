@@ -524,8 +524,9 @@ private:
 
 public:
 	// TODO: 可以在此处添加PCC_Scatter的自定义成员
-	PCC_Service_S* m_ss;
+	PCC_Service_S* m_ss; // 
 	INT32 m_skey;
+	INT64 m_jobkey; //当前节点处理的作业的jobKey
 private:
 	PCC_Scatter_S(NP_SCATTEREDSessionMaker& sessionMaker, NP_SCATTEREDSession* sessionR, IPCC_Scatter_LocalCallback* sessionL);
 	~PCC_Scatter_S();
@@ -933,6 +934,8 @@ private:
 public:
 	// TODO: 可以在此处添加PCC_Service的自定义成员
 	CPCCHandler m_handler;
+	std::queue<INT64> m_que_jobkeys;
+	
 private:
 	PCC_Service_S(NP_SCATTEREDSessionMaker& sessionMaker, NP_SCATTEREDSession* sessionR, IPCC_Service_LocalCallback* sessionL);
 	~PCC_Service_S();

@@ -392,12 +392,18 @@ TCPSError PCC_Scatter_S::OnComputed(
 				IN const tcps_Binary& context
 				) posting_method
 {
+	
+
+	//回调sevice接口的OnExecuted()	
+	printf("回调作业：%d\n",m_jobkey);
+	TCPSError rt = pgrid_util::Singleton<CScatteredManage>::instance().callbackSS(m_jobkey,taskKey,errorCode,context);
+	
 	//放回可调度队列
 	printf("放回旧节点%d\n",m_skey);
 	pgrid_util::Singleton<CScatteredManage>::instance().pushNode(m_skey,this);
 
-	//回调sevice接口的OnExecuted()	
-	return m_ss->OnExecuted(taskKey,errorCode,context);
+	return rt;
+	//return m_ss->OnExecuted(taskKey,errorCode,context);//通过m_ss中转回调，有崩溃的可能 （m_ss失效）
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -461,6 +467,9 @@ void PCC_Service_S::OnClose(
 	NPLogInfo(("PCC_Service_S::OnClose(%d, %s, %s(%d))", sessionKey, IPP_TO_STR_A(peerID_IPP), tcps_GetErrTxt(cause), cause));
 	// TODO: 请添加接口PCC_Service的连接关闭处理
 	m_handler.OnClose(sessionKey,peerID_IPP,cause);
+	//清除提交的job
+	pgrid_util::Singleton<CScatteredManage>::instance().clearInvalidJobs(m_que_jobkeys);
+
 }
 
 TCPSError PCC_Service_S::Login(
@@ -505,7 +514,9 @@ TCPSError PCC_Service_S::Execute(
 				) method
 {
 	// TODO: 请实现此函数
-	return m_handler.Execute(moduleKey,inputUrl,outputUrl,moduleParams,jobKey);
+	
+	TCPSError rt = m_handler.Execute(moduleKey,inputUrl,outputUrl,moduleParams,jobKey);
+	return rt;
 }
 
 TCPSError PCC_Service_S::QueryJobs(
