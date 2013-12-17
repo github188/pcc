@@ -346,6 +346,7 @@ TCPSError PCC_Scatter_S::OnConnected(
 
 	NPLogInfo(("PCC_Scatter_S::OnConnected(%d, %s, %d)", sessionKey, IPP_TO_STR_A(peerID_IPP), sessionCount));
 	m_skey = sessionKey;
+	m_jobkey = -1;
 	return TCPS_OK;
 }
 
@@ -361,6 +362,7 @@ void PCC_Scatter_S::OnPostingCallReady()
 	// TODO: 请添加接口PCC_Scatter的posting回调就绪处理
 
 	printf("插入新节点%d\n",m_skey);
+	//如果正在处理作业，则要回调通知
 	pgrid_util::Singleton<CScatteredManage>::instance().pushNode(m_skey,this);
 	NPLogInfo(("PCC_Scatter_S::OnPostingCallReady()"));
 }
@@ -383,6 +385,11 @@ void PCC_Scatter_S::OnClose(
 {
 	NPLogInfo(("PCC_Scatter_S::OnClose(%d, %s, %s(%d))", sessionKey, IPP_TO_STR_A(peerID_IPP), tcps_GetErrTxt(cause), cause));
 	// TODO: 请添加接口PCC_Scatter的连接关闭处理
+	if(m_jobkey > -1)//节点正在处理作业，报告作业处理未完成退出
+	{
+		tcps_Binary context;
+		pgrid_util::Singleton<CScatteredManage>::instance().callbackSS(m_jobkey,m_jobkey,TCPS_ERROR,context);
+	}
 	pgrid_util::Singleton<CScatteredManage>::instance().diableNode(sessionKey);
 }
 
@@ -392,14 +399,13 @@ TCPSError PCC_Scatter_S::OnComputed(
 				IN const tcps_Binary& context
 				) posting_method
 {
-	
-
 	//回调sevice接口的OnExecuted()	
 	printf("回调作业：%d\n",m_jobkey);
 	TCPSError rt = pgrid_util::Singleton<CScatteredManage>::instance().callbackSS(m_jobkey,taskKey,errorCode,context);
 	
 	//放回可调度队列
 	printf("放回旧节点%d\n",m_skey);
+	this->m_jobkey = -1;
 	pgrid_util::Singleton<CScatteredManage>::instance().pushNode(m_skey,this);
 
 	return rt;
@@ -628,7 +634,7 @@ TCPSError PCC_Toolkit_S::AddModule(
 TCPSError PCC_Toolkit_S::AddModuleFile(
 				IN INT64 moduleKey,
 				IN PCC_ModuleFileType fileType,
-				IN const tcps_Array<PCC_ModuleFile>& moudleFiles
+				IN const tcps_Array<PCC_ModuleFile>& moduleFiles
 				) method
 {
 	// TODO: 请实现此函数

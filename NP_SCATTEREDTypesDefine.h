@@ -736,8 +736,8 @@ typedef TCPSError (*FNMakeLocalSession_GRID_User)(
 #define PCC_ModulePattern_defined
 enum PCC_ModulePattern
 {
-	PCC_TOOL_FRONT_END = 1,
-	PCC_TOOL_BACKGROUND = 2,
+	PCC_MODULE_FRONT_END = 1,
+	PCC_MODULE_BACKGROUND = 2,
 };
 #endif	// #ifndef PCC_ModulePattern_defined
 
@@ -798,6 +798,12 @@ struct PCC_ModuleFile
 {
 	tcps_String name;
 	tcps_Binary data;
+	BOOL entry;
+
+	PCC_ModuleFile()
+	{
+		this->entry = false;
+	}
 
 	int Compare(const PCC_ModuleFile& r) const;
 	ISCM_STRUCT_COMPARE_OPERATORS(PCC_ModuleFile)
@@ -845,6 +851,8 @@ struct PCC_ModuleInfo
 	tcps_String description;
 	INT32 moduleFileType;
 	INT32 moduleLatency;
+	LTMSEL addTime;
+	INT64 moduleSize;
 
 	PCC_ModuleInfo()
 	{
@@ -853,6 +861,8 @@ struct PCC_ModuleInfo
 		this->moduleType = 0;
 		this->moduleFileType = 0;
 		this->moduleLatency = 0;
+		this->addTime = INVALID_UTC_MSEL;
+		this->moduleSize = 0;
 	}
 
 	int Compare(const PCC_ModuleInfo& r) const;
@@ -908,9 +918,9 @@ struct IPCC_Scatter_LocalCallback : public iscm_ILocalCallbackBase, public PCC_S
 				IN const tcps_Binary& moduleParams
 				) posting_callback;
 
-	typedef TCPSError (*FN_AddMoudle)(
+	typedef TCPSError (*FN_AddModule)(
 				IN void* sessionObj_wrap,
-				IN const PCC_ModuleIndex& moduleIndex,
+				IN INT64 moduleKey,
 				IN const tcps_Array<PCC_ModuleFile>& moudleFiles
 				) callback;
 
@@ -919,9 +929,10 @@ struct IPCC_Scatter_LocalCallback : public iscm_ILocalCallbackBase, public PCC_S
 				IN INT64 moduleKey
 				) callback;
 
-	typedef TCPSError (*FN_ListModules)(
+	typedef TCPSError (*FN_FindModule)(
 				IN void* sessionObj_wrap,
-				OUT tcps_Array<PCC_ModuleIndex>& modulesIndex
+				IN INT64 moduleKey,
+				OUT BOOL& found
 				) callback;
 };
 
@@ -944,11 +955,15 @@ public:
 	{
 		INT32 progress;
 		TCPSError errorCode;
+		LTMSEL commitTime;
+		LTMSEL costedTime;
 
 		ExecuteState()
 		{
 			this->progress = 0;
 			this->errorCode = TCPS_ERROR;
+			this->commitTime = INVALID_UTC_MSEL;
+			this->costedTime = INVALID_UTC_MSEL;
 		}
 
 		int Compare(const ExecuteState& r) const;
@@ -1040,42 +1055,14 @@ typedef TCPSError (*FNMakeLocalSession_PCC_Service)(
 			);
 #endif	// #ifndef PCC_Service_T_defined
 
-#ifndef PCC_OSType_defined
-#define PCC_OSType_defined
-enum PCC_OSType
+#ifndef PCC_ModulePlatform_defined
+#define PCC_ModulePlatform_defined
+enum PCC_ModulePlatform
 {
-	PCC_OS_WINDOWS = 0,
-	PCC_OS_LINUX = 1,
+	PCC_MODULE_WIN32 = 1,
+	PCC_MODULE_WIN64 = 2,
 };
-#endif	// #ifndef PCC_OSType_defined
-
-#ifndef PCC_ExecuteBits_defined
-#define PCC_ExecuteBits_defined
-enum PCC_ExecuteBits
-{
-	PCC_32BITS = 0,
-	PCC_64BITS = 1,
-};
-#endif	// #ifndef PCC_ExecuteBits_defined
-
-#ifndef PCC_CPUType_defined
-#define PCC_CPUType_defined
-enum PCC_CPUType
-{
-	PCC_CPU_X86_X64 = 0,
-	PCC_CPU_ARM = 1,
-};
-#endif	// #ifndef PCC_CPUType_defined
-
-#ifndef PCC_BinaryType_defined
-#define PCC_BinaryType_defined
-enum PCC_BinaryType
-{
-	PCC_MACHINE_RAW = 0,
-	PCC_JAVA_CODE = 1,
-	PCC_CSHARP_CODE = 2,
-};
-#endif	// #ifndef PCC_BinaryType_defined
+#endif	// #ifndef PCC_ModulePlatform_defined
 
 #ifndef PCC_ModuleProperty_defined
 #define PCC_ModuleProperty_defined
@@ -1084,24 +1071,22 @@ struct PCC_ModuleProperty
 	PCC_ModuleTag moduleTag;
 	INT32 modulePattern;
 	INT32 moduleFileType;
-	PCC_ModuleType moduleType;
+	INT32 moduleType;
 	PCC_ModuleLatency moduleLatency;
 	tcps_String description;
-	PCC_CPUType cpuType;
-	PCC_OSType osType;
-	PCC_ExecuteBits executeBits;
-	PCC_BinaryType binaryType;
+	INT64 modulePlatform;
+	LTMSEL addTime;
+	INT64 moduleSize;
 
 	PCC_ModuleProperty()
 	{
 		this->modulePattern = 0;
 		this->moduleFileType = 0;
-		this->moduleType = PCC_MODULE_IMGPROC;
+		this->moduleType = 0;
 		this->moduleLatency = PCC_LATENCY_SMALL;
-		this->cpuType = PCC_CPU_X86_X64;
-		this->osType = PCC_OS_WINDOWS;
-		this->executeBits = PCC_32BITS;
-		this->binaryType = PCC_MACHINE_RAW;
+		this->modulePlatform = 0;
+		this->addTime = INVALID_UTC_MSEL;
+		this->moduleSize = 0;
 	}
 
 	int Compare(const PCC_ModuleProperty& r) const;
@@ -1165,7 +1150,7 @@ struct IPCC_Toolkit_LocalMethod : public iscm_ILocalMethodBase, public PCC_Toolk
 				IN void* sessionObj_wrap,
 				IN INT64 moduleKey,
 				IN PCC_ModuleFileType fileType,
-				IN const tcps_Array<PCC_ModuleFile>& moudleFiles
+				IN const tcps_Array<PCC_ModuleFile>& moduleFiles
 				) method;
 
 	typedef TCPSError (*FN_RemoveModule)(
@@ -1740,6 +1725,9 @@ typedef TCPSError (*FNMakeLocalSession_PCC_Toolkit)(
 		cmp = SimpleTypeCompare_(this->data, r.data);
 		if(0 != cmp)
 			return cmp;
+		cmp = SimpleTypeCompare_(this->entry, r.entry);
+		if(0 != cmp)
+			return cmp;
 		return 0;
 	}
 #endif	// #ifndef PCC_ModuleFile_Compare_defined
@@ -1770,6 +1758,12 @@ typedef TCPSError (*FNMakeLocalSession_PCC_Toolkit)(
 		cmp = SimpleTypeCompare_(this->moduleLatency, r.moduleLatency);
 		if(0 != cmp)
 			return cmp;
+		cmp = SimpleTypeCompare_(this->addTime, r.addTime);
+		if(0 != cmp)
+			return cmp;
+		cmp = SimpleTypeCompare_(this->moduleSize, r.moduleSize);
+		if(0 != cmp)
+			return cmp;
 		return 0;
 	}
 #endif	// #ifndef PCC_ModuleInfo_Compare_defined
@@ -1783,6 +1777,12 @@ typedef TCPSError (*FNMakeLocalSession_PCC_Toolkit)(
 		if(0 != cmp)
 			return cmp;
 		cmp = SimpleTypeCompare_(this->errorCode, r.errorCode);
+		if(0 != cmp)
+			return cmp;
+		cmp = SimpleTypeCompare_(this->commitTime, r.commitTime);
+		if(0 != cmp)
+			return cmp;
+		cmp = SimpleTypeCompare_(this->costedTime, r.costedTime);
 		if(0 != cmp)
 			return cmp;
 		return 0;
@@ -1812,16 +1812,13 @@ typedef TCPSError (*FNMakeLocalSession_PCC_Toolkit)(
 		cmp = SimpleTypeCompare_(this->description, r.description);
 		if(0 != cmp)
 			return cmp;
-		cmp = SimpleTypeCompare_(this->cpuType, r.cpuType);
+		cmp = SimpleTypeCompare_(this->modulePlatform, r.modulePlatform);
 		if(0 != cmp)
 			return cmp;
-		cmp = SimpleTypeCompare_(this->osType, r.osType);
+		cmp = SimpleTypeCompare_(this->addTime, r.addTime);
 		if(0 != cmp)
 			return cmp;
-		cmp = SimpleTypeCompare_(this->executeBits, r.executeBits);
-		if(0 != cmp)
-			return cmp;
-		cmp = SimpleTypeCompare_(this->binaryType, r.binaryType);
+		cmp = SimpleTypeCompare_(this->moduleSize, r.moduleSize);
 		if(0 != cmp)
 			return cmp;
 		return 0;
@@ -2343,17 +2340,20 @@ typedef TCPSError (*FNMakeLocalSession_PCC_Toolkit)(
 		int size = 0;
 		size += iscm_GetStreamedSize(val.name);
 		size += iscm_GetStreamedSize(val.data);
+		size += (int)sizeof(val.entry);
 		return size;
 	}
 	inline void iscm_StreamedLoad(PCC_ModuleFile& val, const BYTE*& data)
 	{
 		iscm_StreamedLoad(val.name, data);
 		iscm_StreamedLoad(val.data, data);
+		iscm_StreamedLoad(val.entry, data);
 	}
 	inline void iscm_StreamedStore(BYTE*& buf, const PCC_ModuleFile& val)
 	{
 		iscm_StreamedStore(buf, val.name);
 		iscm_StreamedStore(buf, val.data);
+		iscm_StreamedStore(buf, val.entry);
 	}
 #endif	// #ifndef PCC_ModuleFile_STREAMED_FUNCTIONS_defined
 
@@ -2369,6 +2369,8 @@ typedef TCPSError (*FNMakeLocalSession_PCC_Toolkit)(
 		size += iscm_GetStreamedSize(val.description);
 		size += (int)sizeof(val.moduleFileType);
 		size += (int)sizeof(val.moduleLatency);
+		size += (int)sizeof(val.addTime);
+		size += (int)sizeof(val.moduleSize);
 		return size;
 	}
 	inline void iscm_StreamedLoad(PCC_ModuleInfo& val, const BYTE*& data)
@@ -2380,6 +2382,8 @@ typedef TCPSError (*FNMakeLocalSession_PCC_Toolkit)(
 		iscm_StreamedLoad(val.description, data);
 		iscm_StreamedLoad(val.moduleFileType, data);
 		iscm_StreamedLoad(val.moduleLatency, data);
+		iscm_StreamedLoad(val.addTime, data);
+		iscm_StreamedLoad(val.moduleSize, data);
 	}
 	inline void iscm_StreamedStore(BYTE*& buf, const PCC_ModuleInfo& val)
 	{
@@ -2390,6 +2394,8 @@ typedef TCPSError (*FNMakeLocalSession_PCC_Toolkit)(
 		iscm_StreamedStore(buf, val.description);
 		iscm_StreamedStore(buf, val.moduleFileType);
 		iscm_StreamedStore(buf, val.moduleLatency);
+		iscm_StreamedStore(buf, val.addTime);
+		iscm_StreamedStore(buf, val.moduleSize);
 	}
 #endif	// #ifndef PCC_ModuleInfo_STREAMED_FUNCTIONS_defined
 
@@ -2404,10 +2410,9 @@ typedef TCPSError (*FNMakeLocalSession_PCC_Toolkit)(
 		size += (int)sizeof(val.moduleType);
 		size += (int)sizeof(val.moduleLatency);
 		size += iscm_GetStreamedSize(val.description);
-		size += (int)sizeof(val.cpuType);
-		size += (int)sizeof(val.osType);
-		size += (int)sizeof(val.executeBits);
-		size += (int)sizeof(val.binaryType);
+		size += (int)sizeof(val.modulePlatform);
+		size += (int)sizeof(val.addTime);
+		size += (int)sizeof(val.moduleSize);
 		return size;
 	}
 	inline void iscm_StreamedLoad(PCC_ModuleProperty& val, const BYTE*& data)
@@ -2418,10 +2423,9 @@ typedef TCPSError (*FNMakeLocalSession_PCC_Toolkit)(
 		iscm_StreamedLoad(val.moduleType, data);
 		iscm_StreamedLoad(val.moduleLatency, data);
 		iscm_StreamedLoad(val.description, data);
-		iscm_StreamedLoad(val.cpuType, data);
-		iscm_StreamedLoad(val.osType, data);
-		iscm_StreamedLoad(val.executeBits, data);
-		iscm_StreamedLoad(val.binaryType, data);
+		iscm_StreamedLoad(val.modulePlatform, data);
+		iscm_StreamedLoad(val.addTime, data);
+		iscm_StreamedLoad(val.moduleSize, data);
 	}
 	inline void iscm_StreamedStore(BYTE*& buf, const PCC_ModuleProperty& val)
 	{
@@ -2431,10 +2435,9 @@ typedef TCPSError (*FNMakeLocalSession_PCC_Toolkit)(
 		iscm_StreamedStore(buf, val.moduleType);
 		iscm_StreamedStore(buf, val.moduleLatency);
 		iscm_StreamedStore(buf, val.description);
-		iscm_StreamedStore(buf, val.cpuType);
-		iscm_StreamedStore(buf, val.osType);
-		iscm_StreamedStore(buf, val.executeBits);
-		iscm_StreamedStore(buf, val.binaryType);
+		iscm_StreamedStore(buf, val.modulePlatform);
+		iscm_StreamedStore(buf, val.addTime);
+		iscm_StreamedStore(buf, val.moduleSize);
 	}
 #endif	// #ifndef PCC_ModuleProperty_STREAMED_FUNCTIONS_defined
 

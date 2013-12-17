@@ -632,9 +632,9 @@ public:
 		typedef tcps_QuickStringMap<CPtrStrA, Info, 5> CallbackMap;
 		CallbackMap cbmap_;
 		BOOL matching_Compute;
-		BOOL matching_AddMoudle;
+		BOOL matching_AddModule;
 		BOOL matching_RemoveModule;
-		BOOL matching_ListModules;
+		BOOL matching_FindModule;
 		BOOL matching_SetRedirect_;
 		void Reset();
 		CallbackMatchingFlag();
@@ -768,16 +768,16 @@ private:
 				) posting_method;
 
 public:
-	TCPSError AddMoudle(
-				IN const PCC_ModuleIndex& moduleIndex,
+	TCPSError AddModule(
+				IN INT64 moduleKey,
 				IN const tcps_Array<PCC_ModuleFile>& moudleFiles
 				) callback;
-	TCPSError AddMoudle(
-				IN const PCC_ModuleIndex& moduleIndex,
+	TCPSError AddModule(
+				IN INT64 moduleKey,
 				IN const PCC_ModuleFile* moudleFiles, IN INT32 moudleFiles_count
 				) callback
-		{	return this->AddMoudle(
-							moduleIndex,
+		{	return this->AddModule(
+							moduleKey,
 							tcps_Array<PCC_ModuleFile>(xat_bind, (PCC_ModuleFile*)moudleFiles, moudleFiles_count)
 							);
 		}
@@ -788,8 +788,9 @@ public:
 				) callback;
 
 public:
-	TCPSError ListModules(
-				OUT tcps_Array<PCC_ModuleIndex>& modulesIndex
+	TCPSError FindModule(
+				IN INT64 moduleKey,
+				OUT BOOL& found
 				) callback;
 
 public:
@@ -859,15 +860,15 @@ private:
 		{
 			PROC fnOnStreamedCallback_L_;
 			PROC fnCompute;
-			PROC fnAddMoudle;
+			PROC fnAddModule;
 			PROC fnRemoveModule;
-			PROC fnListModules;
+			PROC fnFindModule;
 			TFunc()
 				: fnOnStreamedCallback_L_(NULL)
 				, fnCompute(NULL)
-				, fnAddMoudle(NULL)
+				, fnAddModule(NULL)
 				, fnRemoveModule(NULL)
-				, fnListModules(NULL)
+				, fnFindModule(NULL)
 				{}
 		};
 		TFunc* func_;
@@ -1451,7 +1452,7 @@ private:
 	TCPSError AddModuleFile(
 				IN INT64 moduleKey,
 				IN PCC_ModuleFileType fileType,
-				IN const tcps_Array<PCC_ModuleFile>& moudleFiles
+				IN const tcps_Array<PCC_ModuleFile>& moduleFiles
 				) method;
 
 private:

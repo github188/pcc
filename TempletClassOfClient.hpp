@@ -103,8 +103,8 @@ protected:
 		return TCPS_ERR_NOT_IMPLEMENTED;
 	}
 
-	virtual TCPSError AddMoudle(
-				IN const PCC_ModuleIndex& moduleIndex,
+	virtual TCPSError AddModule(
+				IN INT64 moduleKey,
 				IN const tcps_Array<PCC_ModuleFile>& moudleFiles
 				) callback
 	{
@@ -120,8 +120,9 @@ protected:
 		return TCPS_ERR_NOT_IMPLEMENTED;
 	}
 
-	virtual TCPSError ListModules(
-				OUT tcps_Array<PCC_ModuleIndex>& modulesIndex
+	virtual TCPSError FindModule(
+				IN INT64 moduleKey,
+				OUT BOOL& found
 				) callback
 	{
 		// TODO: 请实现此函数

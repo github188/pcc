@@ -133,6 +133,7 @@ public:
 	void pushNode(INT32 key,PCC_Scatter_S* nd)
 	{
 		CNPAutoLock lock(m_lock_deque);
+		//nd->m_jobkey = -1;//ÖØÖÃ
 		std::map<INT32,PCC_Scatter_S*> ::_Pairib rt= m_nodes.insert(std::make_pair(key,nd));
 		ASSERT(rt.second);
 		{

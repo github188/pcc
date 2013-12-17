@@ -6,6 +6,7 @@
 #include <sstream>
 #include "filestorage.h"
 #include "NP_SCATTEREDSession.h"
+#include "strtmpl.h "
 //#include "singleton.h"
 typedef char BIN_DIR[MAX_PATH] ;
 char bin_dir[MAX_PATH];
@@ -84,7 +85,7 @@ BOOL CScatteredManage::GridModules()
 			modulesInfo.modulePattern = PCC_LATENCY_LARGE;
 			modulesInfo.moduleFileType =PCC_MODULE_MACHINE_RAW;
 			modulesInfo.moduleType = PCC_MODULE_IMGPROC;//这个放在模块文件夹的名称里，待后面调整
-			modulesInfo.modulePattern = PCC_TOOL_BACKGROUND;
+			modulesInfo.modulePattern =PCC_MODULE_BACKGROUND;
 			insert(std::make_pair(progInfos[i].programKey,modulesInfo));
 		}
 		return TRUE;
@@ -116,11 +117,11 @@ BOOL CScatteredManage::RegisterModules (const char *moduleDir)//这个函数的调用必
 				//minfo.moduleKey = ++ pmng->m_lastkey;//scattered的模块id是从BASE_ID开始的，以协同grid的模块id管理
 				minfo.moduleTag .name = mod_name.c_str() ;
 				minfo.moduleTag.version .major = vmax;
-				minfo.moduleTag.version .major = vmin;
+				minfo.moduleTag.version .minor = vmin;
 
 				minfo.moduleFileType = PCC_MODULE_MACHINE_RAW;
 				minfo.moduleLatency = PCC_LATENCY_LARGE;
-				minfo.modulePattern = PCC_TOOL_BACKGROUND;
+				minfo.modulePattern =PCC_MODULE_BACKGROUND;
 				
 				minfo.moduleType = PCC_MODULE_IMGPROC;//这个放在模块文件夹的名称里，待后面调整
 				INT64 key = Atoi64_(mod.substr(0,mod.find_first_of('#')).c_str());
@@ -163,8 +164,18 @@ BOOL CScatteredManage::CopyModules (const char *moduleDir,tcps_Array<PCC_ModuleF
 					return true;
 				}
                 tcps_Array<PCC_ModuleFile> &moudleFiles = *((tcps_Array<PCC_ModuleFile>*)cbParam);
+
+				std::string str1 =GetFileName(filePathname);
+				//std::string mod =str1.substr(mod.find_first_of("\\/")+1,-1);
+				//CSmartArray<tstring> namesss;
+				//StrSeparater_Sep(filePathname,"\\/",namesss);
+				//std::string mod = namesss[namesss.size()-2];
+				//std::string mod_name = mod.substr(mod.find_first_of('#')+1,mod.find_last_of('-',-1)-mod.find_first_of('#')-1);
+				
 				int nfile = moudleFiles.Length();
 				moudleFiles.Resize(++nfile);
+				moudleFiles[nfile-1].name =str1.c_str();// mod_name.c_str();
+				moudleFiles[nfile-1].data.Resize(file.GetSize());
 				if (-1 == file.Read(0, moudleFiles[nfile-1].data.Get(), file.GetSize()))
 				{
 					NPLogError(("读取文件%s失败\n",filePathname));
@@ -271,24 +282,40 @@ int CScatteredManage::processJobs()
 					index.moduleKey = sj.moduleKey;
 					//确保节点端存在 moduleKey指定的模块
 					moudleFiles.Release();
-					if(nd.ps->AddMoudle(index,moudleFiles) == -27)// 节点端没有,同步此模块
+				    BOOL isFound = false;
+					if(TCPS_OK ==nd.ps->FindModule(sj.moduleKey,isFound) )// 节点端没有,同步此模块
 					{
-						//读取模块 填充 index,moudleFiles
-						if(getModules(index,moudleFiles))
+						if(!isFound)
 						{
-							//再次调用接口
-							if(nd.ps->AddMoudle(index,moudleFiles) != TCPS_OK)
+							//读取模块 填充 index,moudleFiles
+							if(getModules(index,moudleFiles))
+							{
+								//再次调用接口
+								if(nd.ps->AddModule(sj.moduleKey,moudleFiles) != TCPS_OK)
+								{
+									nd.ps->m_ss = NULL;//for mark
+									pushNode(nd.key,nd.ps);
+									NPLogError(("模块更新失败，作业无法调度\n"));
+									break;
+								}
+							}
+							else
 							{
 								nd.ps->m_ss = NULL;//for mark
 								pushNode(nd.key,nd.ps);
-								NPLogError(("模块更新失败，作业无法调度\n"));
+								NPLogError(("模块读取失败，作业无法调度\n"));
 								break;
 							}
 						}
-
 					}
-					
-					//
+					else
+					{
+						pushNode(nd.key,nd.ps);
+						NPLogError(("无法获取模块状态！\n"));
+						break;
+					}
+					//节点暂时分离出去了
+					//这里应当添加节点处理超时
 					nd.ps->Compute(sj.moduleKey,
 					sj.jobKey,
 					sj.info.dataInputUrl,
@@ -540,27 +567,32 @@ TCPSError CPCCHandler::AddModule(
 			{
 				ASSERT(!moudleFiles[i].name.IsEmpty());
 				ASSERT(!moudleFiles[i].data.IsEmpty());
-				//std::ostringstream filePathStream;
-				//filePathStream << jobProgramDir<< "/" << files[i].name.Get();
+				std::ostringstream filePathStream;
+				filePathStream << module_name_t.str()<< "/" << moudleFiles[i].name.Get();
 				CFileStorage file;
-				if (!file.Open(module_name_t.str().c_str(), CFileStorage::
+				if (!file.Open(filePathStream.str().c_str(), CFileStorage::
 					fs_read_write_ex))
 				{
+					NPLogError(("%p,%d\n",moudleFiles[i].data.Get(),moudleFiles[i].data.Length()));
 					NPLogError(("Create file %s for job program %s-%d.%d failed",
 						module_name_t.str().c_str(), moduleProperty.moduleTag.name.Get(),
 						moduleProperty.moduleTag.version.major,
 						moduleProperty.moduleTag.version.minor));
-					//NPRemoveFileOrDir(jobProgramDir.c_str());
+					NPRemoveFileOrDir(module_name_t.str().c_str());
+					file.Close();
 					return TCPS_ERR_FILE_OPEN;
 				}
 
 				if (-1 == file.Write(0, moudleFiles[i].data.Get(), moudleFiles[i].data.Length()))
 				{
-					NPLogError(("Create file %s for job program %s-%d.%d failed",
+					NPLogError(("%p,%d\n",moudleFiles[i].data.Get(),moudleFiles[i].data.Length()));
+					NPLogError(("Write file %s for job program %s-%d.%d failed",
 						module_name_t.str().c_str(), moduleProperty.moduleTag.name.Get(),
 						moduleProperty.moduleTag.version.major,
 						moduleProperty.moduleTag.version.minor));
 					//NPRemoveFileOrDir(jobProgramDir.c_str());
+					NPRemoveFileOrDir(module_name_t.str().c_str());
+					file.Close();
 					return TCPS_ERR_FILE_WRITE;
 				}
 				file.Close();

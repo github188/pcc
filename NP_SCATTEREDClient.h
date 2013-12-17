@@ -1116,12 +1116,12 @@ public:
 		}
 
 protected:
-	virtual TCPSError AddMoudle(
-				IN const PCC_ModuleIndex& moduleIndex,
+	virtual TCPSError AddModule(
+				IN INT64 moduleKey,
 				IN const tcps_Array<PCC_ModuleFile>& moudleFiles
 				) callback
 	{	// TODO: 请在派生类中重载此函数
-		(void)moduleIndex; (void)moudleFiles;
+		(void)moduleKey; (void)moudleFiles;
 		return TCPS_ERR_CALLBACK_NOT_IMPLEMENTED;
 	}
 
@@ -1135,11 +1135,12 @@ protected:
 	}
 
 protected:
-	virtual TCPSError ListModules(
-				OUT tcps_Array<PCC_ModuleIndex>& modulesIndex
+	virtual TCPSError FindModule(
+				IN INT64 moduleKey,
+				OUT BOOL& found
 				) callback
 	{	// TODO: 请在派生类中重载此函数
-		(void)modulesIndex;
+		(void)moduleKey; (void)found;
 		return TCPS_ERR_CALLBACK_NOT_IMPLEMENTED;
 	}
 
@@ -1267,9 +1268,9 @@ private:
 				IN const tcps_Binary& moduleParams
 				) posting_callback;
 
-	static TCPSError Local_AddMoudle(
+	static TCPSError Local_AddModule(
 				IN void* sessionObj_wrap,
-				IN const PCC_ModuleIndex& moduleIndex,
+				IN INT64 moduleKey,
 				IN const tcps_Array<PCC_ModuleFile>& moudleFiles
 				) callback;
 
@@ -1278,9 +1279,10 @@ private:
 				IN INT64 moduleKey
 				) callback;
 
-	static TCPSError Local_ListModules(
+	static TCPSError Local_FindModule(
 				IN void* sessionObj_wrap,
-				OUT tcps_Array<PCC_ModuleIndex>& modulesIndex
+				IN INT64 moduleKey,
+				OUT BOOL& found
 				) callback;
 };
 #endif // #ifndef PCC_Scatter_defined
@@ -2069,17 +2071,17 @@ public:
 	TCPSError AddModuleFile(
 				IN INT64 moduleKey,
 				IN PCC_ModuleFileType fileType,
-				IN const tcps_Array<PCC_ModuleFile>& moudleFiles
+				IN const tcps_Array<PCC_ModuleFile>& moduleFiles
 				) method;
 	TCPSError AddModuleFile(
 				IN INT64 moduleKey,
 				IN PCC_ModuleFileType fileType,
-				IN const PCC_ModuleFile* moudleFiles, IN INT32 moudleFiles_count
+				IN const PCC_ModuleFile* moduleFiles, IN INT32 moduleFiles_count
 				) method
 		{	return this->AddModuleFile(
 							moduleKey,
 							fileType,
-							tcps_Array<PCC_ModuleFile>(xat_bind, (PCC_ModuleFile*)moudleFiles, moudleFiles_count)
+							tcps_Array<PCC_ModuleFile>(xat_bind, (PCC_ModuleFile*)moduleFiles, moduleFiles_count)
 							);
 		}
 

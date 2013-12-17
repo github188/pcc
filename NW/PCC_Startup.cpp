@@ -24,6 +24,8 @@ int CPCC_Startup::Startup()
 	//pmm.reset(new CModuleManage );
 	//pmm->RemoveModule(0);
 	//test
+//	tcps_Array<PCC_ModuleFile> moudleFiles;
+//	pgrid_util::Singleton<CScatteredManage>::instance().CopyModules("D:/niwho-work/new_pgrid/job_center/Debug.2008/ScatterProgams/1000001#PCC_ImgProc_Phimix-1.0",moudleFiles);	
 //	pgrid_util::Singleton<CScatteredManage>::instance().mytest();
 //	pgrid_util::Singleton<CScatteredManage>::instance().init();
 
