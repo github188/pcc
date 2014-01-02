@@ -966,9 +966,10 @@ public:
 			BOOL isPosting;
 			Info(BOOL* p, BOOL is) : pMatchingVar(p), isPosting(is) {}
 		};
-		typedef tcps_QuickStringMap<CPtrStrA, Info, 5> MethodMap;
+		typedef tcps_QuickStringMap<CPtrStrA, Info, 6> MethodMap;
 		MethodMap mmap_;
 		BOOL matching_OnComputed;
+		BOOL matching_OnComputed1;
 		BOOL matching_UDPLink_;
 		BOOL matching_UDPLinkConfirm_;
 		BOOL matching_SetTimeout_;
@@ -1115,6 +1116,90 @@ public:
 							);
 		}
 
+public:
+	TCPSError OnComputed1(
+				IN INT64 taskKey,
+				IN TCPSError errorCode,
+				IN const void* context, IN INT32 context_len,
+				IN const tcps_Array<tcps_Binary>& outArgs
+				) posting_method;
+	TCPSError OnComputed1(
+				IN INT64 taskKey,
+				IN TCPSError errorCode,
+				IN const tcps_Binary& context,
+				IN const tcps_Array<tcps_Binary>& outArgs
+				) posting_method
+		{	return this->OnComputed1(
+							taskKey,
+							errorCode,
+							context.Get(), context.Length(),
+							outArgs
+							);
+		}
+	TCPSError OnComputed1(
+				IN INT64 taskKey,
+				IN TCPSError errorCode,
+				IN const void* context, IN INT32 context_len,
+				IN const tcps_Binary* outArgs, IN INT32 outArgs_count
+				) posting_method
+		{	return this->OnComputed1(
+							taskKey,
+							errorCode,
+							context, context_len,
+							tcps_Array<tcps_Binary>(xat_bind, (tcps_Binary*)outArgs, outArgs_count)
+							);
+		}
+
+public:
+	static TCPSError OnComputed1_Batch(
+				IN const PPCC_Scatter_* clients,
+				IN INT_PTR clientsCount,
+				IN INT64 taskKey,
+				IN TCPSError errorCode,
+				IN const void* context, IN INT32 context_len,
+				IN const tcps_Array<tcps_Binary>& outArgs,
+				OUT PPCC_Scatter_* sendFaileds = NULL,
+				OUT INT_PTR* failedCount = NULL
+				) posting_method;
+	static inline TCPSError OnComputed1_Batch(
+				IN const PPCC_Scatter_* clients,
+				IN INT_PTR clientsCount,
+				IN INT64 taskKey,
+				IN TCPSError errorCode,
+				IN const tcps_Binary& context,
+				IN const tcps_Array<tcps_Binary>& outArgs,
+				OUT PPCC_Scatter_* sendFaileds = NULL,
+				OUT INT_PTR* failedCount = NULL
+				) posting_method
+		{	return PCC_Scatter::OnComputed1_Batch(
+							clients, clientsCount,
+							taskKey,
+							errorCode,
+							context.Get(), context.Length(),
+							outArgs,
+							sendFaileds, failedCount
+							);
+		}
+	static inline TCPSError OnComputed1_Batch(
+				IN const PPCC_Scatter_* clients,
+				IN INT_PTR clientsCount,
+				IN INT64 taskKey,
+				IN TCPSError errorCode,
+				IN const void* context, IN INT32 context_len,
+				IN const tcps_Binary* outArgs, IN INT32 outArgs_count,
+				OUT PPCC_Scatter_* sendFaileds = NULL,
+				OUT INT_PTR* failedCount = NULL
+				) posting_method
+		{	return PCC_Scatter::OnComputed1_Batch(
+							clients, clientsCount,
+							taskKey,
+							errorCode,
+							context, context_len,
+							tcps_Array<tcps_Binary>(xat_bind, (tcps_Binary*)outArgs, outArgs_count),
+							sendFaileds, failedCount
+							);
+		}
+
 protected:
 	virtual TCPSError AddModule(
 				IN INT64 moduleKey,
@@ -1169,10 +1254,12 @@ private:
 		MethodMatchingFlag matchingFlags;
 		PROC fnOnStreamedCall_L_;
 		PROC fnOnComputed;
+		PROC fnOnComputed1;
 		CallSiteL_()
 			: needUpdateFlags(true)
 			, fnOnStreamedCall_L_(NULL)
 			, fnOnComputed(NULL)
+			, fnOnComputed1(NULL)
 			{}
 		void Reset()
 		{
@@ -1180,6 +1267,7 @@ private:
 			matchingFlags.Reset();
 			fnOnStreamedCall_L_ = NULL;
 			fnOnComputed = NULL;
+			fnOnComputed1 = NULL;
 		}
 	};
 	struct LocalMakingFlag_
@@ -1615,6 +1703,18 @@ protected:
 		return TCPS_ERR_CALLBACK_NOT_IMPLEMENTED;
 	}
 
+protected:
+	virtual TCPSError OnExecuted1(
+				IN INT64 jobKey,
+				IN TCPSError errorCode,
+				IN const tcps_Binary& context,
+				IN const tcps_Array<tcps_Binary>& outArgs
+				) posting_callback
+	{	// TODO: 请在派生类中重载此函数
+		(void)jobKey; (void)errorCode; (void)context; (void)outArgs;
+		return TCPS_ERR_CALLBACK_NOT_IMPLEMENTED;
+	}
+
 public:
 	TCPSError QueryJobs(
 				IN const tcps_Array<INT64>& jobsKey,
@@ -1733,7 +1833,7 @@ private:
 	typedef tcps_QuickStringMap<
 				CPtrStrA/*callback_name*/,
 				BOOL /*callback_is_matched*/,
-				1> StreamedCallbackMap;
+				2> StreamedCallbackMap;
 	StreamedCallbackMap m_streamedCallbackMap;
 
 public:
@@ -1782,6 +1882,14 @@ private:
 				IN INT64 jobKey,
 				IN TCPSError errorCode,
 				IN const tcps_Binary& context
+				) posting_callback;
+
+	static TCPSError Local_OnExecuted1(
+				IN void* sessionObj_wrap,
+				IN INT64 jobKey,
+				IN TCPSError errorCode,
+				IN const tcps_Binary& context,
+				IN const tcps_Array<tcps_Binary>& outArgs
 				) posting_callback;
 };
 #endif // #ifndef PCC_Service_defined

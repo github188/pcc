@@ -767,6 +767,14 @@ private:
 				IN const tcps_Binary& context
 				) posting_method;
 
+private:
+	TCPSError OnComputed1(
+				IN INT64 taskKey,
+				IN TCPSError errorCode,
+				IN const tcps_Binary& context,
+				IN const tcps_Array<tcps_Binary>& outArgs
+				) posting_method;
+
 public:
 	TCPSError AddModule(
 				IN INT64 moduleKey,
@@ -1039,9 +1047,10 @@ public:
 			BOOL isPosting;
 			Info(BOOL* p, BOOL is) : pMatchingVar(p), isPosting(is) {}
 		};
-		typedef tcps_QuickStringMap<CPtrStrA, Info, 2> CallbackMap;
+		typedef tcps_QuickStringMap<CPtrStrA, Info, 3> CallbackMap;
 		CallbackMap cbmap_;
 		BOOL matching_OnExecuted;
+		BOOL matching_OnExecuted1;
 		BOOL matching_SetRedirect_;
 		void Reset();
 		CallbackMatchingFlag();
@@ -1150,6 +1159,90 @@ public:
 							);
 		}
 
+public:
+	TCPSError OnExecuted1(
+				IN INT64 jobKey,
+				IN TCPSError errorCode,
+				IN const void* context, IN INT32 context_len,
+				IN const tcps_Array<tcps_Binary>& outArgs
+				) posting_callback;
+	TCPSError OnExecuted1(
+				IN INT64 jobKey,
+				IN TCPSError errorCode,
+				IN const tcps_Binary& context,
+				IN const tcps_Array<tcps_Binary>& outArgs
+				) posting_callback
+		{	return this->OnExecuted1(
+							jobKey,
+							errorCode,
+							context.Get(), context.Length(),
+							outArgs
+							);
+		}
+	TCPSError OnExecuted1(
+				IN INT64 jobKey,
+				IN TCPSError errorCode,
+				IN const void* context, IN INT32 context_len,
+				IN const tcps_Binary* outArgs, IN INT32 outArgs_count
+				) posting_callback
+		{	return this->OnExecuted1(
+							jobKey,
+							errorCode,
+							context, context_len,
+							tcps_Array<tcps_Binary>(xat_bind, (tcps_Binary*)outArgs, outArgs_count)
+							);
+		}
+
+public:
+	static TCPSError OnExecuted1_Batch(
+				IN const PPCC_Service_S_* sessions,
+				IN INT_PTR sessionsCount,
+				IN INT64 jobKey,
+				IN TCPSError errorCode,
+				IN const void* context, IN INT32 context_len,
+				IN const tcps_Array<tcps_Binary>& outArgs,
+				OUT PPCC_Service_S_* sendFaileds = NULL,
+				OUT INT_PTR* failedCount = NULL
+				) posting_callback;
+	static inline TCPSError OnExecuted1_Batch(
+				IN const PPCC_Service_S_* sessions,
+				IN INT_PTR sessionsCount,
+				IN INT64 jobKey,
+				IN TCPSError errorCode,
+				IN const tcps_Binary& context,
+				IN const tcps_Array<tcps_Binary>& outArgs,
+				OUT PPCC_Service_S_* sendFaileds = NULL,
+				OUT INT_PTR* failedCount = NULL
+				) posting_callback
+		{	return PCC_Service_S::OnExecuted1_Batch(
+							sessions, sessionsCount,
+							jobKey,
+							errorCode,
+							context.Get(), context.Length(),
+							outArgs,
+							sendFaileds, failedCount
+							);
+		}
+	static inline TCPSError OnExecuted1_Batch(
+				IN const PPCC_Service_S_* sessions,
+				IN INT_PTR sessionsCount,
+				IN INT64 jobKey,
+				IN TCPSError errorCode,
+				IN const void* context, IN INT32 context_len,
+				IN const tcps_Binary* outArgs, IN INT32 outArgs_count,
+				OUT PPCC_Service_S_* sendFaileds = NULL,
+				OUT INT_PTR* failedCount = NULL
+				) posting_callback
+		{	return PCC_Service_S::OnExecuted1_Batch(
+							sessions, sessionsCount,
+							jobKey,
+							errorCode,
+							context, context_len,
+							tcps_Array<tcps_Binary>(xat_bind, (tcps_Binary*)outArgs, outArgs_count),
+							sendFaileds, failedCount
+							);
+		}
+
 private:
 	TCPSError QueryJobs(
 				IN const tcps_Array<INT64>& jobsKey,
@@ -1228,9 +1321,11 @@ private:
 		{
 			PROC fnOnStreamedCallback_L_;
 			PROC fnOnExecuted;
+			PROC fnOnExecuted1;
 			TFunc()
 				: fnOnStreamedCallback_L_(NULL)
 				, fnOnExecuted(NULL)
+				, fnOnExecuted1(NULL)
 				{}
 		};
 		TFunc* func_;
@@ -1775,6 +1870,7 @@ private:
 	static TCPSError Wrap_GRID_User_SetSessionBufferSize_(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) posting_method;
 	static TCPSError Wrap_GRID_User_MethodCheck_(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
 	static TCPSError Wrap_PCC_Scatter_OnComputed(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) posting_method;
+	static TCPSError Wrap_PCC_Scatter_OnComputed1(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) posting_method;
 	static TCPSError Wrap_PCC_Scatter_UDPLink_(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
 	static TCPSError Wrap_PCC_Scatter_UDPLinkConfirm_(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
 	static TCPSError Wrap_PCC_Scatter_SetTimeout_(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) posting_method;

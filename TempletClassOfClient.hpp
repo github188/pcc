@@ -186,6 +186,17 @@ protected:
 		return TCPS_ERR_NOT_IMPLEMENTED;
 	}
 
+	virtual TCPSError OnExecuted1(
+				IN INT64 jobKey,
+				IN TCPSError errorCode,
+				IN const tcps_Binary& context,
+				IN const tcps_Array<tcps_Binary>& outArgs
+				) posting_callback
+	{
+		// TODO: 请实现此函数
+		return TCPS_ERR_NOT_IMPLEMENTED;
+	}
+
 protected:
 	// 返回TCPS_OK允许重定向；返回非TCPS_OK禁止重定向
 	virtual TCPSError OnPrepareRedirect_(

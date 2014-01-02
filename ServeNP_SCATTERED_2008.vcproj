@@ -121,7 +121,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				UseUnicodeResponseFiles="false"
-				AdditionalIncludeDirectories="."
+				AdditionalIncludeDirectories=".;./griduser;./nw;"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -140,7 +140,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="$(NoInherit)"
-				OutputFile="$(OutDir)\ServeNP_SCATTERED.exe"
+				OutputFile="$(OutDir)\ServeNP_SCATTERED_R20.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				TargetMachine="1"

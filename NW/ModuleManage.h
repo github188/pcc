@@ -108,11 +108,14 @@ public:
 	{
 		CNPAutoLock lok(m_lock_map);
 		modulesInfo.Resize(m_modules.size());
-		int k=0;
+		int k= 0;
 		for(MNG_IT it = m_modules.begin();it!= m_modules.end();++it)
 		{
+
 			modulesInfo[k].key = it->first;
-			modulesInfo[k].prop = it->second;
+			modulesInfo[k].prop= it->second;
+			//modulesInfo[k].prop.moduleTag.name=it->second.moduleTag.name;
+			++k;
 		}
 		return TCPS_OK;
 	}
@@ -213,7 +216,12 @@ public:
 		}*/
 	
 	/////////////////////////////////////////////////////////
-
+	TCPSError callbackSS1(
+		IN INT64 taskKey,
+		IN TCPSError errorCode,
+		IN const tcps_Binary& context,
+		IN const tcps_Array<tcps_Binary>& outArgs
+		);
 	void diableNode(INT32 key)
 	{
         CNPAutoLock lock(m_lock_deque);

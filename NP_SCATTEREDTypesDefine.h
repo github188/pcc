@@ -895,6 +895,14 @@ struct IPCC_Scatter_LocalMethod : public iscm_ILocalMethodBase, public PCC_Scatt
 				IN TCPSError errorCode,
 				IN const tcps_Binary& context
 				) posting_method;
+
+	typedef TCPSError (*FN_OnComputed1)(
+				IN void* sessionObj_wrap,
+				IN INT64 taskKey,
+				IN TCPSError errorCode,
+				IN const tcps_Binary& context,
+				IN const tcps_Array<tcps_Binary>& outArgs
+				) posting_method;
 };
 
 struct IPCC_Scatter_LocalCallback : public iscm_ILocalCallbackBase, public PCC_Scatter_T
@@ -1044,6 +1052,14 @@ struct IPCC_Service_LocalCallback : public iscm_ILocalCallbackBase, public PCC_S
 				IN INT64 jobKey,
 				IN TCPSError errorCode,
 				IN const tcps_Binary& context
+				) posting_callback;
+
+	typedef TCPSError (*FN_OnExecuted1)(
+				IN void* sessionObj_wrap,
+				IN INT64 jobKey,
+				IN TCPSError errorCode,
+				IN const tcps_Binary& context,
+				IN const tcps_Array<tcps_Binary>& outArgs
 				) posting_callback;
 };
 

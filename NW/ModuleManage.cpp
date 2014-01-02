@@ -8,6 +8,7 @@
 #include "NP_SCATTEREDSession.h"
 #include "strtmpl.h "
 //#include "singleton.h"
+#include "ipcvt.h"
 typedef char BIN_DIR[MAX_PATH] ;
 char bin_dir[MAX_PATH];
 BIN_DIR &bbb = pgrid_util::Singleton<BIN_DIR>::instance();
@@ -103,8 +104,8 @@ BOOL CScatteredManage::RegisterModules (const char *moduleDir)//这个函数的调用必
 			
 			if (isDir)
 			{
-				CScatteredManage* pmng = ((CScatteredManage*)cbParam);
-				assert(pmng);
+				//CScatteredManage* pmng = ((CScatteredManage*)cbParam);
+				//assert(pmng);
 				std::string mod = GetFileName(filePathname);
 				//std::string mod_name = mod.substr(0,mod.find_last_of('-',-1));//1xxx7#imgcom
 				
@@ -243,6 +244,36 @@ TCPSError  CScatteredManage::callbackSS(INT64 jk,IN INT64 taskKey,
 		rt = second->OnExecuted(taskKey,errorCode,context);
 	return rt;
 }
+
+TCPSError  CScatteredManage::callbackSS1(
+				IN INT64 taskKey,
+				IN TCPSError errorCode,
+				IN const tcps_Binary& context,
+				IN const tcps_Array<tcps_Binary>& outArgs
+				)///////
+{
+	TCPSError rt = TCPS_OK;
+	PCC_Service_S* second =NULL;
+	{
+		CNPAutoLock lock(m_locker_job_service);
+		std::map<INT64,PCC_Service_S*>::const_iterator it = m_job_service.find(taskKey);
+		if(it != m_job_service.end())//可能为空
+		{
+
+			second = it->second;
+			m_job_service.erase(taskKey);///
+			//return true;
+		}
+		else
+		{
+			printf("warn:#####%s,%lld,%p,%d\n",__FUNCTION__,taskKey,second,m_job_service.size());
+		}
+	}
+	
+	if(second)
+		rt = second->OnExecuted1(taskKey,errorCode,context,outArgs);
+	return rt;
+}
 int CScatteredManage::processJobs()
 {
 	SCNode nd;
@@ -279,6 +310,7 @@ int CScatteredManage::processJobs()
 					
                     
 					nd.ps->m_jobkey = sj.jobKey;
+					printf("节点%p处理作业：%lld\n",nd.ps,sj.jobKey);
 					index.moduleKey = sj.moduleKey;
 					//确保节点端存在 moduleKey指定的模块
 					moudleFiles.Release();
@@ -378,7 +410,8 @@ TCPSError CPCCHandler::Login(
 	m_gridConn.m_pass = "netposa";
 
 	IPP serverIPP;
-	serverIPP.ip_ = inet_addr("127.0.0.1");//连接本机
+	
+	serverIPP.ip_ = GetLocalIP();//inet_addr("127.0.0.1");//连接本机
 	serverIPP.port_ = 9012;
 	m_gridConn.m_service = m_psenssion;
 	return m_gridConn.SetServeIPP(serverIPP,0,m_client_ipp);//
@@ -409,7 +442,7 @@ TCPSError CPCCHandler::Execute(
 		jobinfo.dataOutputUrl = outputUrl;
 		jobinfo.programParam = moduleParams;//应当支持内容拷贝 ，否则有问题
 
-		jobinfo.splitter.name = "RecordsSplit";	//
+		//jobinfo.splitter.name = "RecordsSplit";	//
 		jobinfo.splitter.ver.majorVer = 1;
 		jobinfo.splitter.ver.minorVer = 0;
 

@@ -141,6 +141,9 @@ static int s_PCC_Scatter_Compute_TypeInfo_len_ = 0;
 static const char* s_PCC_Scatter_OnComputed_TypeInfo_ = NULL;
 static int s_PCC_Scatter_OnComputed_TypeInfo_len_ = 0;
 
+static const char* s_PCC_Scatter_OnComputed1_TypeInfo_ = NULL;
+static int s_PCC_Scatter_OnComputed1_TypeInfo_len_ = 0;
+
 static const char* s_PCC_Scatter_AddModule_TypeInfo_ = NULL;
 static int s_PCC_Scatter_AddModule_TypeInfo_len_ = 0;
 
@@ -188,6 +191,9 @@ static int s_PCC_Service_Execute_TypeInfo_len_ = 0;
 
 static const char* s_PCC_Service_OnExecuted_TypeInfo_ = NULL;
 static int s_PCC_Service_OnExecuted_TypeInfo_len_ = 0;
+
+static const char* s_PCC_Service_OnExecuted1_TypeInfo_ = NULL;
+static int s_PCC_Service_OnExecuted1_TypeInfo_len_ = 0;
 
 static const char* s_PCC_Service_QueryJobs_TypeInfo_ = NULL;
 static int s_PCC_Service_QueryJobs_TypeInfo_len_ = 0;
@@ -1067,6 +1073,21 @@ static INT_PTR InitializeAllCallsTypeInfo_()
 	{
 		BYTE const chZipped[] =
 		{
+			0x3D,0x00,0x00,0x80,0x78,0x01,0x2B,0xC8,0x2F,0x2E,0xC9,0xCC,0x4B,0x8F,0xCF,0x4D,
+			0x2D,0xC9,0xC8,0x4F,0xA9,0xF1,0xF4,0x03,0xA2,0x10,0x33,0x13,0x1D,0x20,0x23,0xB5,
+			0xA8,0x28,0xBF,0x08,0xC4,0x48,0xCA,0xCC,0x4B,0x2C,0xAA,0x04,0xB1,0x12,0x8B,0x8A,
+			0x12,0x2B,0x6D,0x20,0x7C,0x3B,0x1D,0x06,0x00,0xD0,0x71,0x16,0x7F,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Scatter_OnComputed1_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Scatter_OnComputed1_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
 			0x4F,0x00,0x00,0x80,0x78,0x01,0x0B,0x70,0x76,0x8E,0xF7,0xCD,0x4F,0x29,0xCD,0x49,
 			0x75,0xCB,0xCC,0x49,0x55,0x29,0x2E,0x29,0xCA,0xCC,0x4B,0xD7,0x49,0xCA,0xCC,0x4B,
 			0x2C,0xAA,0xD4,0x71,0xF2,0xF7,0xF7,0xD1,0xB1,0x4E,0x4E,0xCC,0xC9,0x49,0x4A,0x4C,
@@ -1295,6 +1316,21 @@ static INT_PTR InitializeAllCallsTypeInfo_()
 		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
 		s_PCC_Service_OnExecuted_TypeInfo_ = (const char*)bin.Get();
 		s_PCC_Service_OnExecuted_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x3F,0x00,0x00,0x80,0x78,0x01,0x2B,0xC8,0x2F,0x2E,0xC9,0xCC,0x4B,0x8F,0x4F,0x4E,
+			0xCC,0xC9,0x49,0x4A,0x4C,0xCE,0xAE,0xF1,0xF4,0x03,0xA2,0x10,0x33,0x13,0x1D,0x20,
+			0x23,0xB5,0xA8,0x28,0xBF,0x08,0xC4,0x48,0xCA,0xCC,0x4B,0x2C,0xAA,0x04,0xB1,0x12,
+			0x8B,0x8A,0x12,0x2B,0x6D,0x20,0x7C,0x3B,0x1D,0x06,0x00,0xFC,0x3B,0x17,0x2B,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Service_OnExecuted1_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Service_OnExecuted1_TypeInfo_len_ = bin.Length()-1;
 	}
 
 	{
@@ -10894,6 +10930,14 @@ public:
 				IN const void* context, IN INT32 context_len
 				) posting_method;
 
+public:
+	TCPSError OnComputed1(
+				IN INT64 taskKey,
+				IN TCPSError errorCode,
+				IN const void* context, IN INT32 context_len,
+				IN const tcps_Array<tcps_Binary>& outArgs
+				) posting_method;
+
 protected:
 	virtual TCPSError AddModule(
 				IN INT64 moduleKey,
@@ -11406,6 +11450,8 @@ private:
 private:
 	struct OnComputed_Task_;
 	friend struct OnComputed_Task_;
+	struct OnComputed1_Task_;
+	friend struct OnComputed1_Task_;
 	struct SetTimeout__Task_;
 	friend struct SetTimeout__Task_;
 	struct SetSessionBufferSize__Task_;
@@ -11459,6 +11505,7 @@ PCC_Scatter::MethodMatchingFlag::MethodMatchingFlag()
 {
 	Reset();
 	mmap_.insert(std::make_pair(CPtrStrA("OnComputed", 10), Info(&matching_OnComputed, true)));
+	mmap_.insert(std::make_pair(CPtrStrA("OnComputed1", 11), Info(&matching_OnComputed1, true)));
 	mmap_.insert(std::make_pair(CPtrStrA("UDPLink_", 8), Info(&matching_UDPLink_, false)));
 	mmap_.insert(std::make_pair(CPtrStrA("UDPLinkConfirm_", 15), Info(&matching_UDPLinkConfirm_, false)));
 	mmap_.insert(std::make_pair(CPtrStrA("SetTimeout_", 11), Info(&matching_SetTimeout_, true)));
@@ -11468,6 +11515,7 @@ PCC_Scatter::MethodMatchingFlag::MethodMatchingFlag()
 void PCC_Scatter::MethodMatchingFlag::Reset()
 {
 	matching_OnComputed = false;
+	matching_OnComputed1 = false;
 	matching_UDPLink_ = false;
 	matching_UDPLinkConfirm_ = false;
 	matching_SetTimeout_ = false;
@@ -11479,22 +11527,24 @@ TCPSError PCC_Scatter_RC::UpdateMethodMatchingFlag_()
 	if(!m_methodMatchingUpdatedFlag.needUpdate)
 		return TCPS_OK;
 	InitializeAllCallsTypeInfo_();
-	tcps_String methods_ar[5];
+	tcps_String methods_ar[6];
 	IN tcps_Array<tcps_String> methods;
-	methods.Attach(xat_bind, methods_ar, 5);
-	tcps_String methodTypeInfos_ar[5];
+	methods.Attach(xat_bind, methods_ar, 6);
+	tcps_String methodTypeInfos_ar[6];
 	IN tcps_Array<tcps_String> methodTypeInfos;
-	methodTypeInfos.Attach(xat_bind, methodTypeInfos_ar, 5);
+	methodTypeInfos.Attach(xat_bind, methodTypeInfos_ar, 6);
 	methods_ar[0].Attach(xat_bind, (char*)CONST_STR_TO_PTR_LEN("OnComputed"));
 	methodTypeInfos_ar[0].Attach(xat_bind, (char*)s_PCC_Scatter_OnComputed_TypeInfo_, s_PCC_Scatter_OnComputed_TypeInfo_len_);
-	methods_ar[1].Attach(xat_bind, (char*)CONST_STR_TO_PTR_LEN("UDPLink_"));
-	methodTypeInfos_ar[1].Attach(xat_bind, (char*)s_PCC_Scatter_UDPLink__TypeInfo_, s_PCC_Scatter_UDPLink__TypeInfo_len_);
-	methods_ar[2].Attach(xat_bind, (char*)CONST_STR_TO_PTR_LEN("UDPLinkConfirm_"));
-	methodTypeInfos_ar[2].Attach(xat_bind, (char*)s_PCC_Scatter_UDPLinkConfirm__TypeInfo_, s_PCC_Scatter_UDPLinkConfirm__TypeInfo_len_);
-	methods_ar[3].Attach(xat_bind, (char*)CONST_STR_TO_PTR_LEN("SetTimeout_"));
-	methodTypeInfos_ar[3].Attach(xat_bind, (char*)s_PCC_Scatter_SetTimeout__TypeInfo_, s_PCC_Scatter_SetTimeout__TypeInfo_len_);
-	methods_ar[4].Attach(xat_bind, (char*)CONST_STR_TO_PTR_LEN("SetSessionBufferSize_"));
-	methodTypeInfos_ar[4].Attach(xat_bind, (char*)s_PCC_Scatter_SetSessionBufferSize__TypeInfo_, s_PCC_Scatter_SetSessionBufferSize__TypeInfo_len_);
+	methods_ar[1].Attach(xat_bind, (char*)CONST_STR_TO_PTR_LEN("OnComputed1"));
+	methodTypeInfos_ar[1].Attach(xat_bind, (char*)s_PCC_Scatter_OnComputed1_TypeInfo_, s_PCC_Scatter_OnComputed1_TypeInfo_len_);
+	methods_ar[2].Attach(xat_bind, (char*)CONST_STR_TO_PTR_LEN("UDPLink_"));
+	methodTypeInfos_ar[2].Attach(xat_bind, (char*)s_PCC_Scatter_UDPLink__TypeInfo_, s_PCC_Scatter_UDPLink__TypeInfo_len_);
+	methods_ar[3].Attach(xat_bind, (char*)CONST_STR_TO_PTR_LEN("UDPLinkConfirm_"));
+	methodTypeInfos_ar[3].Attach(xat_bind, (char*)s_PCC_Scatter_UDPLinkConfirm__TypeInfo_, s_PCC_Scatter_UDPLinkConfirm__TypeInfo_len_);
+	methods_ar[4].Attach(xat_bind, (char*)CONST_STR_TO_PTR_LEN("SetTimeout_"));
+	methodTypeInfos_ar[4].Attach(xat_bind, (char*)s_PCC_Scatter_SetTimeout__TypeInfo_, s_PCC_Scatter_SetTimeout__TypeInfo_len_);
+	methods_ar[5].Attach(xat_bind, (char*)CONST_STR_TO_PTR_LEN("SetSessionBufferSize_"));
+	methodTypeInfos_ar[5].Attach(xat_bind, (char*)s_PCC_Scatter_SetSessionBufferSize__TypeInfo_, s_PCC_Scatter_SetSessionBufferSize__TypeInfo_len_);
 	OUT tcps_Array<BOOL> matchingFlags;
 	TCPSError err = this->MethodCheck_(methods, methodTypeInfos, matchingFlags);
 	if(TCPS_OK == err)
@@ -11504,10 +11554,11 @@ TCPSError PCC_Scatter_RC::UpdateMethodMatchingFlag_()
 			m_methodMatchingUpdatedFlag.needUpdate = false;
 			const BOOL* const matchingFlags_p = matchingFlags.Get();
 			m_methodMatchingFlag.matching_OnComputed = matchingFlags_p[0];
-			m_methodMatchingFlag.matching_UDPLink_ = matchingFlags_p[1];
-			m_methodMatchingFlag.matching_UDPLinkConfirm_ = matchingFlags_p[2];
-			m_methodMatchingFlag.matching_SetTimeout_ = matchingFlags_p[3];
-			m_methodMatchingFlag.matching_SetSessionBufferSize_ = matchingFlags_p[4];
+			m_methodMatchingFlag.matching_OnComputed1 = matchingFlags_p[1];
+			m_methodMatchingFlag.matching_UDPLink_ = matchingFlags_p[2];
+			m_methodMatchingFlag.matching_UDPLinkConfirm_ = matchingFlags_p[3];
+			m_methodMatchingFlag.matching_SetTimeout_ = matchingFlags_p[4];
+			m_methodMatchingFlag.matching_SetSessionBufferSize_ = matchingFlags_p[5];
 		}
 		else
 		{
@@ -12778,6 +12829,165 @@ TCPSError PCC_Scatter_RC::OnComputed(
 		return TCPS_ERR_INVALID_PARAM;
 	}
 	Put_Binary_(&m_dataOutfiter, context_wrap, context_wrap_len);
+
+	// 调用RPCCall()
+	{
+		const SockWriteBuf* reqBufVec = m_dataOutfiter.bufs_.Get();
+		int reqBufVecCount = (int)m_dataOutfiter.bufs_.size();
+		if(m_UDPCallbackProxy.isUsing_)
+		{
+			int total = SockTotalizeWriteBufVec(reqBufVec, reqBufVecCount);
+			BYTE* p = (BYTE*)tcps_Alloc(total);
+			if(NULL == p)
+			{
+				ASSERT(false);
+				return TCPS_ERR_OUT_OF_MEMORY;
+			}
+			BYTE* q = p;
+			for(int i=0; i<reqBufVecCount; ++i)
+			{
+				const SockWriteBuf& swb = reqBufVec[i];
+				memcpy(q, swb.data, swb.len);
+				q += swb.len;
+			}
+			ASSERT((int)(q-p) == total);
+			SockWriteBuf swb_udp;
+			swb_udp.data = p;
+			swb_udp.len = total;
+			INT32 sessionID;
+			m_rpcRequester->GetPeerSessionKey(sessionID);
+			iscm_IUDPServeMan& udpServer = iscm_FetchUDPServeMan();
+			udpServer.SendSessionData(sessionID, &swb_udp, 1);
+		}
+		else if(0 != m_postingProxy.callerKey_)
+		{
+			INT_PTR queueFullIndexes = -1;
+			INT_PTR queueFullCount = 0;
+			TCPSError err = iscm_FetchPostingCallerMan().BatchPosting(&m_postingProxy.callerKey_, 1, reqBufVec, reqBufVecCount, &queueFullIndexes, &queueFullCount);
+			if(TCPS_OK != err)
+				return err;
+			ASSERT(0==queueFullCount || 1==queueFullCount);
+			if(1 == queueFullCount)
+				return TCPS_ERR_POSTING_PENDING_FULL;
+		}
+		else
+		{
+			TCPSError err = m_rpcRequester->Post(RPCCT_RPC, reqBufVec, reqBufVecCount);
+			if(TCPS_OK != err)
+				return err;
+		}
+	}
+	return TCPS_OK;
+}
+
+struct PCC_Scatter_RC::OnComputed1_Task_ : public NPBaseTask
+{
+	PCC_Scatter_RC& face_;
+	IN INT64 taskKey_wrap_;
+	IN TCPSError errorCode_wrap_;
+	IN const tcps_Binary context_wrap_;
+	IN const tcps_Array<tcps_Binary> outArgs_wrap_;
+	explicit OnComputed1_Task_(
+				PCC_Scatter_RC& face,
+				IN INT64 taskKey_wrap,
+				IN TCPSError errorCode_wrap,
+				IN const void* context_wrap, IN INT32 context_wrap_len,
+				IN const tcps_Array<tcps_Binary>& outArgs_wrap
+				)
+		: face_(face)
+		, taskKey_wrap_(taskKey_wrap)
+		, errorCode_wrap_(errorCode_wrap)
+		, context_wrap_(context_wrap, context_wrap_len)
+		, outArgs_wrap_(outArgs_wrap)
+		{}
+	virtual void OnPoolTask()
+	{
+		if(!face_.m_prepareDisconnect)
+		{
+			face_.OnComputed1(
+						taskKey_wrap_,
+						errorCode_wrap_,
+						context_wrap_.Get(), context_wrap_.Length(),
+						outArgs_wrap_
+						);
+		}
+		VERIFY(InterlockedDecrement(&face_.m_asyncTaskStat.totalAsyncTasks) >= 0);
+		tcps_Delete(this);
+	}
+};
+TCPSError PCC_Scatter_RC::OnComputed1(
+				IN INT64 taskKey_wrap,
+				IN TCPSError errorCode_wrap,
+				IN const void* context_wrap, IN INT32 context_wrap_len,
+				IN const tcps_Array<tcps_Binary>& outArgs_wrap
+				) posting_method
+{
+	iscm_ClientCallType iscm_cct_ = iscm_cct_invalid;
+	if(m_callingOutTIDs.HasFlag(OSThreadSelf(), &iscm_cct_))
+	{
+		if(iscm_cct_OnClose == iscm_cct_)
+			return TCPS_ERR_EXITING;
+		if(iscm_cct_callback==iscm_cct_ || iscm_cct_posting_callback==iscm_cct_)
+		{
+			OnComputed1_Task_* task = tcps_NewEx(OnComputed1_Task_, (
+							*this,
+							taskKey_wrap,
+							errorCode_wrap,
+							context_wrap, context_wrap_len,
+							outArgs_wrap
+							));
+			VERIFY(InterlockedIncrement(&m_asyncTaskStat.totalAsyncTasks) > 0);
+			FetchTaskPool()->Push(task);
+			return TCPS_OK;
+		}
+	}
+
+	iscm_IRequester::AutoBeginCallEx locker(m_rpcRequester);
+	ASSERT(0 == m_dataOutfiter.bufs_.size());
+
+	TCPSError errUpdate = UpdateMethodMatchingFlag_();
+	if(TCPS_OK != errUpdate)
+		return errUpdate;
+	if(!m_methodMatchingFlag.matching_OnComputed1)
+		return TCPS_ERR_METHOD_NOT_MATCH;
+
+	DataOutfiter::AutoClear outfiter_AutoClear(m_dataOutfiter);
+
+	// 填充基本类型数据到outfiter
+	iscm_PeerCallFlags peerCallFlags;
+	peerCallFlags.sizeofBOOL_req = (INT8)sizeof(BOOL);
+	peerCallFlags.sizeofEnum_req = (INT8)sizeof(DummyEnumType);
+	peerCallFlags.requireReply = 0;
+	peerCallFlags.dummy_15 = 0;
+	m_dataOutfiter.Push(&peerCallFlags, sizeof(peerCallFlags));
+
+	INT32 call_id_len = 24;
+	m_dataOutfiter.Push(&call_id_len, sizeof(INT32));
+	m_dataOutfiter.Push("PCC_Scatter::OnComputed1", call_id_len+1);
+
+	// 填充IN参数到outfiter
+
+	// IN INT64 taskKey
+	Put_BaseType_(&m_dataOutfiter, taskKey_wrap);
+
+	// IN TCPSError errorCode
+	Put_BaseType_(&m_dataOutfiter, errorCode_wrap);
+
+	// IN tcps_Binary context
+	if(context_wrap_len<0 || (context_wrap_len>0 && NULL==context_wrap))
+	{
+		ASSERT(false);
+		return TCPS_ERR_INVALID_PARAM;
+	}
+	Put_Binary_(&m_dataOutfiter, context_wrap, context_wrap_len);
+
+	// IN tcps_Array<tcps_Binary> outArgs
+	Put_BaseType_(&m_dataOutfiter, outArgs_wrap.LenRef());
+	for(int idx1=0; idx1<outArgs_wrap.Length(); ++idx1)
+	{
+		const tcps_Binary& ref1 = outArgs_wrap[idx1];
+		Put_Binary_(&m_dataOutfiter, ref1.Get(), ref1.LenRef());
+	}
 
 	// 调用RPCCall()
 	{
@@ -14280,6 +14490,7 @@ const PCC_Scatter::MethodMatchingFlag& PCC_Scatter::GetMethodMatchingFlag(
 		{
 			InitializeAllCallsTypeInfo_();
 			m_callSiteL->matchingFlags.matching_OnComputed = (NULL != m_faceL->FindMethod_("OnComputed", 10, s_PCC_Scatter_OnComputed_TypeInfo_, s_PCC_Scatter_OnComputed_TypeInfo_len_));
+			m_callSiteL->matchingFlags.matching_OnComputed1 = (NULL != m_faceL->FindMethod_("OnComputed1", 11, s_PCC_Scatter_OnComputed1_TypeInfo_, s_PCC_Scatter_OnComputed1_TypeInfo_len_));
 			m_callSiteL->needUpdateFlags = false;
 		}
 		if(err)
@@ -14301,7 +14512,7 @@ TCPSError PCC_Scatter::GetStreamedMethodTypeInfo_(
 				) const
 {
 	InitializeAllCallsTypeInfo_();
-	typedef CQuickStringMap<CPtrStrA, CPtrStrA, QSS_Traits<1> > MethodMap_;
+	typedef CQuickStringMap<CPtrStrA, CPtrStrA, QSS_Traits<2> > MethodMap_;
 	static MethodMap_* s_mMap = NULL;
 	if(NULL == s_mMap)
 	{
@@ -14311,6 +14522,7 @@ TCPSError PCC_Scatter::GetStreamedMethodTypeInfo_(
 			static MethodMap_ s_mMapObj;
 			MethodMap_& mMap = s_mMapObj;
 			VERIFY(mMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("OnComputed"), CPtrStrA(s_PCC_Scatter_OnComputed_TypeInfo_, s_PCC_Scatter_OnComputed_TypeInfo_len_))).second);
+			VERIFY(mMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("OnComputed1"), CPtrStrA(s_PCC_Scatter_OnComputed1_TypeInfo_, s_PCC_Scatter_OnComputed1_TypeInfo_len_))).second);
 			s_mMap = &mMap;
 		}
 	}
@@ -14653,6 +14865,269 @@ TCPSError PCC_Scatter::OnComputed_Batch(
 		iscm_swb_.data = context_wrap;
 		iscm_swb_.len = context_wrap_len;
 		iscm_swb_ar_.push_back(iscm_swb_);
+	}
+
+	// 准备callerKeys
+	tcps_SmartArray<INT32, 256> iscm_callerKey_ar_;
+	iscm_callerKey_ar_.resize(iscm_clients_ar_.size());
+	for(INT_PTR i=0; i<(INT_PTR)iscm_clients_ar_.size(); ++i)
+		iscm_callerKey_ar_[i] = iscm_clients_ar_[i]->m_faceR->m_postingProxy.callerKey_;
+
+	iscm_IPostingCallerMan& callerMan = iscm_FetchPostingCallerMan();
+	if(NULL == wrap_sendFaileds)
+	{
+		return callerMan.BatchPosting(
+							iscm_callerKey_ar_.Get(),
+							iscm_callerKey_ar_.size(),
+							iscm_swb_ar_.Get(),
+							iscm_swb_ar_.size(),
+							NULL,
+							NULL
+							);
+	}
+
+	ASSERT(wrap_failedCount);
+	tcps_SmartArray<INT_PTR, 256> iscm_queueFullIndexesAr;
+	iscm_queueFullIndexesAr.resize(iscm_callerKey_ar_.size());
+	TCPSError err = callerMan.BatchPosting(
+						iscm_callerKey_ar_.Get(),
+						iscm_callerKey_ar_.size(),
+						iscm_swb_ar_.Get(),
+						iscm_swb_ar_.size(),
+						iscm_queueFullIndexesAr.Get(),
+						wrap_failedCount
+						);
+	ASSERT(0<=*wrap_failedCount && *wrap_failedCount<=(INT_PTR)iscm_queueFullIndexesAr.size());
+	for(INT_PTR i=0; i<*wrap_failedCount; ++i)
+		(wrap_sendFaileds+notReadies)[i] = iscm_clients_ar_[iscm_queueFullIndexesAr[i]];
+	*wrap_failedCount += notReadies;
+	return err;
+}
+
+TCPSError PCC_Scatter::OnComputed1(
+				IN INT64 taskKey_wrap,
+				IN TCPSError errorCode_wrap,
+				IN const void* context_wrap, IN INT32 context_wrap_len,
+				IN const tcps_Array<tcps_Binary>& outArgs_wrap
+				) posting_method
+{
+	ASSERT(NULL==m_faceR || NULL==m_faceL);
+	if(m_faceR)
+	{
+		return m_faceR->OnComputed1(
+					taskKey_wrap,
+					errorCode_wrap,
+					context_wrap, context_wrap_len,
+					outArgs_wrap
+					);
+	}
+	else if(m_faceL)
+	{
+		if(m_streamedCallSite.func)
+		{
+			// 计算输入参数长度
+			INT_PTR inParamsLen = 0;
+			(void)inParamsLen;
+			inParamsLen += sizeof(taskKey_wrap);
+			inParamsLen += sizeof(errorCode_wrap);
+			tcps_Binary context_tmp_wrap;
+			context_tmp_wrap.Attach(xat_bind, (void*)context_wrap, context_wrap_len);
+			inParamsLen += iscm_GetStreamedSize(context_tmp_wrap);
+			inParamsLen += iscm_GetStreamedSize(outArgs_wrap);
+
+			// 拷贝输入参数到inParamsBuf
+			tcps_Binary inParamsBuf;
+			if(!inParamsBuf.Resize(inParamsLen))
+				return TCPS_ERR_OUT_OF_MEMORY;
+			BYTE* pInParamsBuf = inParamsBuf.Get();
+			(void)pInParamsBuf;
+			iscm_StreamedStore(pInParamsBuf, taskKey_wrap);
+			iscm_StreamedStore(pInParamsBuf, errorCode_wrap);
+			iscm_StreamedStore(pInParamsBuf, context_tmp_wrap);
+			iscm_StreamedStore(pInParamsBuf, outArgs_wrap);
+			ASSERT(pInParamsBuf-inParamsBuf.Get() == inParamsLen);
+
+			// 调用外部流式方法处理函数
+			void* replyData = NULL;
+			INT_PTR replyLen = 0;
+			TCPSError err = m_streamedCallSite.func(
+						m_streamedCallSite.serverObj,
+						m_streamedCallSite.sessionObj,
+						"PCC_Scatter",
+						"OnComputed1",
+						inParamsBuf.Get(),
+						inParamsLen,
+						&replyData,
+						&replyLen
+						);
+			tcps_Binary autoFreeReplyData;
+			if(replyData)
+				autoFreeReplyData.Attach(xat_hold, replyData, replyLen);
+			if(TCPS_OK != err)
+				return err;
+
+			// 解析返回参数
+			const BYTE* pReplyData = (const BYTE*)replyData;
+			(void)pReplyData;
+			ASSERT(pReplyData-(const BYTE*)replyData == replyLen);
+			return TCPS_OK;
+		}
+
+		if(NULL == m_callSiteL)
+		{
+			CNPAutoLock locker(m_lock);
+			if(NULL == m_callSiteL)
+				m_callSiteL = tcps_New(CallSiteL_);
+		}
+		PROC& methodFuncL = m_callSiteL->fnOnComputed1;
+		if(NULL == methodFuncL)
+		{
+			InitializeAllCallsTypeInfo_();
+			methodFuncL = m_faceL->FindMethod_("OnComputed1", 11, s_PCC_Scatter_OnComputed1_TypeInfo_, s_PCC_Scatter_OnComputed1_TypeInfo_len_);
+			if(NULL == methodFuncL)
+				return TCPS_ERR_METHOD_NOT_MATCH;
+		}
+		return ((IPCC_Scatter_LocalMethod::FN_OnComputed1)methodFuncL)(
+					m_faceL,
+					taskKey_wrap,
+					errorCode_wrap,
+					tcps_Binary(xat_bind, (BYTE*)context_wrap, context_wrap_len),
+					outArgs_wrap
+					);
+	}
+	else
+		return TCPS_ERR_NEED_SERVE_IPP;
+}
+
+TCPSError PCC_Scatter::OnComputed1_Batch(
+				IN const PPCC_Scatter_* wrap_clients,
+				IN INT_PTR wrap_clientsCount,
+				IN INT64 taskKey_wrap,
+				IN TCPSError errorCode_wrap,
+				IN const void* context_wrap, IN INT32 context_wrap_len,
+				IN const tcps_Array<tcps_Binary>& outArgs_wrap,
+				OUT PPCC_Scatter_* wrap_sendFaileds /*= NULL*/,
+				OUT INT_PTR* wrap_failedCount /*= NULL*/
+				) posting_method
+{
+	if(wrap_failedCount)
+		*wrap_failedCount= 0;
+
+	if(NULL==wrap_clients || wrap_clientsCount<=0)
+	{
+		ASSERT(false);
+		return TCPS_ERR_INVALID_PARAM;
+	}
+	if((!!wrap_sendFaileds) != (!!wrap_failedCount))
+	{
+		ASSERT(false); // wrap_sendFaileds、wrap_failedCount要么都为NULL，要么都不为NULL
+		return TCPS_ERR_INVALID_PARAM;
+	}
+
+	INT_PTR notReadies = 0;
+	tcps_SmartArray<PPCC_Scatter_, 256> iscm_clients_ar_;
+	for(INT_PTR i=0; i<wrap_clientsCount; ++i)
+	{
+		if(NULL == wrap_clients[i])
+		{
+			ASSERT_EX(false, tcps_GetErrTxt(TCPS_ERR_INVALID_PARAM));
+			continue;
+		}
+		if(wrap_clients[i]->m_faceL)
+		{
+			wrap_clients[i]->OnComputed1(
+					taskKey_wrap,
+					errorCode_wrap,
+					context_wrap, context_wrap_len,
+					outArgs_wrap
+					);
+			continue;
+		}
+		if(TCPS_OK != wrap_clients[i]->m_faceR->UpdateMethodMatchingFlag_())
+			continue;
+		if(!wrap_clients[i]->m_faceR->m_methodMatchingFlag.matching_OnComputed1)
+		{
+		//	IPP peerIPP = wrap_clients[i]->m_faceR->GetServingIPP();
+		//	NPLogWarning(("The 'PCC_Scatter::OnComputed1()' of '%s' is not matched!", IPP_TO_STR_A(peerIPP)));
+			continue;
+		}
+		if(0 == wrap_clients[i]->m_faceR->m_postingProxy.callerKey_)
+		{
+			if(wrap_sendFaileds)
+			{
+				wrap_sendFaileds[notReadies] = wrap_clients[i];
+				++notReadies;
+			}
+			continue;
+		}
+		iscm_clients_ar_.push_back(wrap_clients[i]);
+	}
+	if(0 == iscm_clients_ar_.size())
+		return TCPS_OK;
+
+	// 准备调用数据
+	tcps_SmartArray<SockWriteBuf, 256> iscm_swb_ar_;
+	SockWriteBuf iscm_swb_;
+
+	iscm_PeerCallFlags peerCallFlags;
+	peerCallFlags.sizeofBOOL_req = (INT8)sizeof(BOOL);
+	peerCallFlags.sizeofEnum_req = (INT8)sizeof(DummyEnumType);
+	peerCallFlags.requireReply = 0;
+	peerCallFlags.dummy_15 = 0;
+	iscm_swb_.data = &peerCallFlags;
+	iscm_swb_.len = sizeof(peerCallFlags);
+	iscm_swb_ar_.push_back(iscm_swb_);
+
+	INT32 call_id_len = 24;
+	iscm_swb_.data = &call_id_len;
+	iscm_swb_.len = sizeof(call_id_len);
+	iscm_swb_ar_.push_back(iscm_swb_);
+	iscm_swb_.data = "PCC_Scatter::OnComputed1";
+	iscm_swb_.len = call_id_len+1;
+	iscm_swb_ar_.push_back(iscm_swb_);
+
+	// IN INT64 taskKey
+	iscm_swb_.data = &taskKey_wrap;
+	iscm_swb_.len = sizeof(taskKey_wrap);
+	iscm_swb_ar_.push_back(iscm_swb_);
+
+	// IN TCPSError errorCode
+	iscm_swb_.data = &errorCode_wrap;
+	iscm_swb_.len = sizeof(errorCode_wrap);
+	iscm_swb_ar_.push_back(iscm_swb_);
+
+	// IN tcps_Binary context
+	if(context_wrap_len<0 || (context_wrap_len>0 && NULL==context_wrap))
+	{
+		ASSERT(false);
+		return TCPS_ERR_INVALID_PARAM;
+	}
+	iscm_swb_.data = &context_wrap_len;
+	iscm_swb_.len = sizeof(context_wrap_len);
+	iscm_swb_ar_.push_back(iscm_swb_);
+	if(context_wrap_len > 0)
+	{
+		iscm_swb_.data = context_wrap;
+		iscm_swb_.len = context_wrap_len;
+		iscm_swb_ar_.push_back(iscm_swb_);
+	}
+
+	// IN tcps_Array<tcps_Binary> outArgs
+	iscm_swb_.data = &outArgs_wrap.LenRef();
+	iscm_swb_.len = sizeof(outArgs_wrap.LenRef());
+	iscm_swb_ar_.push_back(iscm_swb_);
+	for(int idx1=0; idx1<outArgs_wrap.Length(); ++idx1)
+	{
+		const tcps_Binary& ref1 = outArgs_wrap[idx1];
+		iscm_swb_.data = &ref1.LenRef();
+		iscm_swb_.len = sizeof(ref1.LenRef());
+		iscm_swb_ar_.push_back(iscm_swb_);
+		if(ref1.Length() > 0)
+		{
+			iscm_swb_.data = ref1.Get();
+			iscm_swb_.len = ref1.Length();
+			iscm_swb_ar_.push_back(iscm_swb_);
+		}
 	}
 
 	// 准备callerKeys
@@ -15200,6 +15675,27 @@ protected:
 		return TCPS_ERR_CALLBACK_NOT_IMPLEMENTED;
 	}
 
+protected:
+	virtual TCPSError OnExecuted1(
+				IN INT64 jobKey,
+				IN TCPSError errorCode,
+				IN const tcps_Binary& context,
+				IN const tcps_Array<tcps_Binary>& outArgs
+				) posting_callback
+	{
+		if(m_owner)
+		{
+			return m_owner->OnExecuted1(
+					jobKey,
+					errorCode,
+					context,
+					outArgs
+					);
+		}
+		// TODO: 请在派生类中重载此函数
+		return TCPS_ERR_CALLBACK_NOT_IMPLEMENTED;
+	}
+
 public:
 	TCPSError QueryJobs(
 				IN const tcps_Array<INT64>& jobsKey,
@@ -15289,6 +15785,7 @@ private:
 
 private:
 	static TCPSError Wrap_OnExecuted(PCC_Service_RC*, PCC_Service*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) posting_callback;
+	static TCPSError Wrap_OnExecuted1(PCC_Service_RC*, PCC_Service*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) posting_callback;
 	static TCPSError Wrap_SetRedirect_(PCC_Service_RC*, PCC_Service*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) posting_callback;
 	static TCPSError Wrap_CallbackCheck_(PCC_Service_RC*, PCC_Service*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) callback;
 
@@ -15454,7 +15951,7 @@ private:
 			: handler(hd), isPosting(pst)
 			{}
 	};
-	typedef CQuickStringMap<CPtrStrA, CallbackSite_, QSS_Traits<3> > CallbackMap_;
+	typedef CQuickStringMap<CPtrStrA, CallbackSite_, QSS_Traits<4> > CallbackMap_;
 	static const CallbackMap_* sm_callbackMap;
 	static CallbackMap_& GetCallbackMap_();
 	static void InitCallbackMap_();
@@ -15687,7 +16184,7 @@ TCPSError PCC_Service_RC::CallbackCheck_(
 		return TCPS_ERR_INVALID_PARAM;
 
 	InitializeAllCallsTypeInfo_();
-	typedef CQuickStringMap<CPtrStrA, CPtrStrA, QSS_Traits<2> > CallbackMap_;
+	typedef CQuickStringMap<CPtrStrA, CPtrStrA, QSS_Traits<3> > CallbackMap_;
 	static CallbackMap_* s_cbMap = NULL;
 	if(NULL == s_cbMap)
 	{
@@ -15697,6 +16194,7 @@ TCPSError PCC_Service_RC::CallbackCheck_(
 			static CallbackMap_ s_cbMapObj;
 			CallbackMap_& cbMap = s_cbMapObj;
 			VERIFY(cbMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("OnExecuted"), CPtrStrA(s_PCC_Service_OnExecuted_TypeInfo_, s_PCC_Service_OnExecuted_TypeInfo_len_))).second);
+			VERIFY(cbMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("OnExecuted1"), CPtrStrA(s_PCC_Service_OnExecuted1_TypeInfo_, s_PCC_Service_OnExecuted1_TypeInfo_len_))).second);
 			VERIFY(cbMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("SetRedirect_"), CPtrStrA(s_PCC_Service_SetRedirect__TypeInfo_, s_PCC_Service_SetRedirect__TypeInfo_len_))).second);
 			s_cbMap = &cbMap;
 		}
@@ -16165,6 +16663,7 @@ void PCC_Service_RC::InitCallbackMap_()
 	CallbackMap_& cbMap = GetCallbackMap_();
 	ASSERT(0 == cbMap.size());
 	VERIFY(cbMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Service::OnExecuted"), CallbackSite_(&PCC_Service_RC::Wrap_OnExecuted, true))).second);
+	VERIFY(cbMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Service::OnExecuted1"), CallbackSite_(&PCC_Service_RC::Wrap_OnExecuted1, true))).second);
 	VERIFY(cbMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Service::SetRedirect_"), CallbackSite_(&PCC_Service_RC::Wrap_SetRedirect_, true))).second);
 	VERIFY(cbMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Service::CallbackCheck_"), CallbackSite_(&PCC_Service_RC::Wrap_CallbackCheck_, false))).second);
 	sm_callbackMap = &cbMap;
@@ -17442,6 +17941,132 @@ TCPSError PCC_Service_RC::Wrap_OnExecuted(
 				jobKey_wrap,
 				errorCode_wrap,
 				context_wrap
+				);
+		}
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError PCC_Service_RC::Wrap_OnExecuted1(
+				IN PCC_Service_RC* thisObj /*= NULL*/,
+				IN PCC_Service* faceObj /*= NULL*/,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) posting_callback
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN INT64 jobKey
+	IN INT64 jobKey_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, jobKey_wrap);
+
+	// IN TCPSError errorCode
+	IN TCPSError errorCode_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, errorCode_wrap);
+
+	// IN tcps_Binary context
+	IN tcps_Binary context_wrap;
+	GET_BINARY_EX_(thisObj, ptrInParams, ptrInParamsLen, context_wrap);
+
+	// IN tcps_Array<tcps_Binary> outArgs
+	IN tcps_Array<tcps_Binary> outArgs_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, array_len);
+	outArgs_wrap.Resize(array_len);
+	for(int idx1=0; idx1<outArgs_wrap.Length(); ++idx1)
+	{
+		tcps_Binary& ref1 = outArgs_wrap[idx1];
+		GET_BINARY_EX_(thisObj, ptrInParams, ptrInParamsLen, ref1);
+	}
+
+	if(0 != ptrInParamsLen)
+	{
+		// NPLogError(("PCC_Service::OnExecuted1() posting_callback, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的回调函数
+	try
+	{
+		if(thisObj)
+		{
+			iscm_ClientThreadIDs::AutoThisTID autoCallingFlag(thisObj->m_callingOutTIDs, iscm_cct_posting_callback);
+			errTcps = thisObj->OnExecuted1(
+				jobKey_wrap,
+				errorCode_wrap,
+				context_wrap,
+				outArgs_wrap
+				);
+		}
+		else
+		{
+			ASSERT(faceObj);
+			errTcps = faceObj->OnExecuted1(
+				jobKey_wrap,
+				errorCode_wrap,
+				context_wrap,
+				outArgs_wrap
 				);
 		}
 	}
@@ -18948,6 +19573,14 @@ BOOL PCC_Service::IsStreamedCallbackMatched_(
 	if(typeInfo)
 		tcps_Free(typeInfo);
 
+	typeInfo = NULL;
+	infoLen = 0;
+	err = this->GetStreamedCallbackTypeInfo_("OnExecuted1", 11, typeInfo, infoLen);
+	matched = (TCPS_OK==err && s_PCC_Service_OnExecuted1_TypeInfo_len_==infoLen && 0==strncmp(s_PCC_Service_OnExecuted1_TypeInfo_, typeInfo, infoLen));
+	VERIFY(m_streamedCallbackMap.insert(std::make_pair(CPtrStrA("OnExecuted1", 11), matched)).second);
+	if(typeInfo)
+		tcps_Free(typeInfo);
+
 	m_streamedCallbackMap_IsInited = true;
 	StreamedCallbackMap::iterator it = m_streamedCallbackMap.find(callbackName, nameLen);
 	if(it == m_streamedCallbackMap.end())
@@ -19693,7 +20326,7 @@ PROC PCC_Service::FindCallback_(
 
 	InitializeAllCallsTypeInfo_();
 	typedef TwoItems<CPtrStrA, PROC> FuncPair;
-	typedef CQuickStringMap<CPtrStrA, FuncPair, QSS_Traits<1> > CallbackMap_;
+	typedef CQuickStringMap<CPtrStrA, FuncPair, QSS_Traits<2> > CallbackMap_;
 	static CallbackMap_* s_cbMap = NULL;
 	if(NULL == s_cbMap)
 	{
@@ -19703,6 +20336,7 @@ PROC PCC_Service::FindCallback_(
 			static CallbackMap_ s_cbMapObj;
 			CallbackMap_& cbMap = s_cbMapObj;
 			cbMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("OnExecuted"), FuncPair(CPtrStrA(s_PCC_Service_OnExecuted_TypeInfo_, s_PCC_Service_OnExecuted_TypeInfo_len_), (PROC)&Local_OnExecuted)));
+			cbMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("OnExecuted1"), FuncPair(CPtrStrA(s_PCC_Service_OnExecuted1_TypeInfo_, s_PCC_Service_OnExecuted1_TypeInfo_len_), (PROC)&Local_OnExecuted1)));
 			s_cbMap = &cbMap;
 		}
 	}
@@ -19854,6 +20488,66 @@ TCPSError PCC_Service::Local_OnExecuted(
 					jobKey_wrap,
 					errorCode_wrap,
 					context_wrap
+					);
+}
+
+TCPSError PCC_Service::Local_OnExecuted1(
+				IN void* sessionObj,
+				IN INT64 jobKey_wrap,
+				IN TCPSError errorCode_wrap,
+				IN const tcps_Binary& context_wrap,
+				IN const tcps_Array<tcps_Binary>& outArgs_wrap
+				) posting_callback
+{
+	PCC_Service* const pCC_ServiceObj_wrap = (PCC_Service*)sessionObj;
+	void* iscm_replyData = NULL;
+	INT_PTR iscm_replyLen = 0;
+	TCPSError err = pCC_ServiceObj_wrap->StreamedCallback_(NULL, 0, NULL, 0, iscm_replyData, iscm_replyLen);
+	if(TCPS_ERR_STREAMED_CALLBACK_NOT_IMPLEMENTED != err)
+	{
+		if(!pCC_ServiceObj_wrap->IsStreamedCallbackMatched_("OnExecuted1", 11))
+			return TCPS_ERR_CALLBACK_NOT_MATCH;
+
+		DataOutfiter dataOutfiter;
+
+		// IN INT64 jobKey
+		Put_BaseType_(&dataOutfiter, jobKey_wrap);
+
+		// IN TCPSError errorCode
+		Put_BaseType_(&dataOutfiter, errorCode_wrap);
+
+		// IN tcps_Binary context
+		Put_Binary_(&dataOutfiter, context_wrap.Get(), context_wrap.LenRef());
+
+		// IN tcps_Array<tcps_Binary> outArgs
+		Put_BaseType_(&dataOutfiter, outArgs_wrap.LenRef());
+		for(int idx2=0; idx2<outArgs_wrap.Length(); ++idx2)
+		{
+			const tcps_Binary& ref2 = outArgs_wrap[idx2];
+			Put_Binary_(&dataOutfiter, ref2.Get(), ref2.LenRef());
+		}
+
+		ISCM_GAIN_TEMPORARY_CONTINUOUS_CALL_DATA(dataOutfiter.bufs_.Get(), dataOutfiter.bufs_.size(), iscm_data, iscm_dataLen);
+		iscm_replyData = NULL;
+		iscm_replyLen = 0;
+		err = pCC_ServiceObj_wrap->StreamedCallback_(
+						"OnExecuted1", 11,
+						iscm_data, iscm_dataLen,
+						iscm_replyData, iscm_replyLen
+						);
+		ASSERT(NULL==iscm_replyData && 0==iscm_replyLen);
+		if(iscm_replyData)
+			tcps_Free(iscm_replyData);
+		if(TCPS_ERR_STREAMED_CALLBACK_NOT_IMPLEMENTED != err)
+			return err;
+		// 忽略返回TCPS_ERR_MALFORMED_REQ情况？？
+	}
+
+	return pCC_ServiceObj_wrap->OnExecuted1(
+					jobKey_wrap,
+					errorCode_wrap,
+					context_wrap,
+					outArgs_wrap
 					);
 }
 

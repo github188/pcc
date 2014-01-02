@@ -7,6 +7,7 @@
 #include "ipcvt.h"
 #include "nplog.h"
 #include "singleton.h"
+#include "ipcvt.h"
 /////////////////////////////////////////////////////////////////////
 // interface GRID_User
 
@@ -191,7 +192,8 @@ TCPSError GRID_User_S::Login(
 				IN const tcps_String& password
 				) method
 {
-	IPP ipp("127.0.0.1.9012", 0);
+	
+	IPP ipp(GetLocalIP(),9012);//127.0.0.1
 	TCPSError ret = this->SetRedirect_(ipp, NULL, 0);
 	ret;
 	return TCPS_OK;	
@@ -401,15 +403,32 @@ TCPSError PCC_Scatter_S::OnComputed(
 {
 	//回调sevice接口的OnExecuted()	
 	printf("回调作业：%d\n",m_jobkey);
+	ASSERT(taskKey == m_jobkey);
 	TCPSError rt = pgrid_util::Singleton<CScatteredManage>::instance().callbackSS(m_jobkey,taskKey,errorCode,context);
 	
 	//放回可调度队列
 	printf("放回旧节点%d\n",m_skey);
 	this->m_jobkey = -1;
 	pgrid_util::Singleton<CScatteredManage>::instance().pushNode(m_skey,this);
-
 	return rt;
-	//return m_ss->OnExecuted(taskKey,errorCode,context);//通过m_ss中转回调，有崩溃的可能 （m_ss失效）
+}
+
+TCPSError PCC_Scatter_S::OnComputed1(
+				IN INT64 taskKey,
+				IN TCPSError errorCode,
+				IN const tcps_Binary& context,
+				IN const tcps_Array<tcps_Binary>& outArgs
+				) posting_method
+{
+	//回调sevice接口的OnExecuted()	
+	printf("回调作业：%d\n",m_jobkey);
+	TCPSError rt = pgrid_util::Singleton<CScatteredManage>::instance().callbackSS1(taskKey,errorCode,context,outArgs);
+	
+	//放回可调度队列
+	printf("放回旧节点%d\n",m_skey);
+	this->m_jobkey = -1;
+	pgrid_util::Singleton<CScatteredManage>::instance().pushNode(m_skey,this);
+	return rt;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -663,5 +682,7 @@ TCPSError PCC_Toolkit_S::ListModules(
 				) method
 {
 	// TODO: 请实现此函数
-	return m_handler.ListModules(modulesInfo);
+	TCPSError rt =  
+		m_handler.ListModules(modulesInfo);
+	return rt;
 }
