@@ -509,6 +509,349 @@ private:
 				) callback;
 };
 
+class PCC_Deploy;
+class PCC_Deploy_LS;
+class PCC_Deploy_S : public PCC_Deploy_T
+{
+	friend class PCC_Deploy;
+	friend class NP_SCATTEREDSession;
+	friend class PCC_Deploy_LS;
+private:
+	PCC_Deploy_S(const PCC_Deploy_S&);
+	PCC_Deploy_S& operator= (const PCC_Deploy_S&);
+
+	typedef PCC_Deploy_S* PPCC_Deploy_S_;
+
+public:
+	// TODO: 可以在此处添加PCC_Deploy的自定义成员
+
+private:
+	PCC_Deploy_S(NP_SCATTEREDSessionMaker& sessionMaker, NP_SCATTEREDSession* sessionR, IPCC_Deploy_LocalCallback* sessionL);
+	~PCC_Deploy_S();
+	TCPSError OnConnected(
+				IN INT32 sessionKey,
+				IN const IPP& peerID_IPP,
+				IN INT32 sessionCount
+				);
+	void OnCallbackReady();
+	void OnPostingCallReady();
+	void OnPeerBroken(
+				IN INT32 sessionKey,
+				IN const IPP& peerID_IPP,
+				IN TCPSError cause
+				);
+	void OnClose(
+				IN INT32 sessionKey,
+				IN const IPP& peerID_IPP,
+				IN TCPSError cause
+				);
+
+public:
+	// 主动关闭会话
+	void CloseSession(
+				IN TCPSError cause = TCPS_OK
+				);
+
+	// 获取对端IPP
+	// peerID用于返回对端的peerID_IPP
+	IPP GetPeerIPP(
+				OUT IPP* peerID = NULL
+				) const;
+
+	// 对端是否为进程内客户端
+	BOOL IsLocalPeer() const;
+
+	// 判断回调连接是否就绪
+	BOOL CallbackIsReady() const;
+
+	// 设置回调调用网络超时，INFINITE表示使用默认值，回调未就绪时返回失败
+	TCPSError SetTimeout(
+				IN DWORD connectTimeout /*= INFINITE*/,
+				IN DWORD recvTimeout /*= INFINITE*/,
+				IN DWORD sendTimeout /*= INFINITE*/
+				);
+	TCPSError GetTimeout(
+				OUT DWORD* connectTimeout /*= NULL*/,
+				OUT DWORD* recvTimeout /*= NULL*/,
+				OUT DWORD* sendTimeout /*= NULL*/
+				);
+
+	// 设置同步调用网络缓冲大小，<0表示不改变此项，==0表示恢复默认值
+	void SetSessionBufferSize(
+				IN INT32 recvBufBytes /*= -1*/,
+				IN INT32 sendBufBytes /*= -1*/
+				);
+	void GetSessionBufferSize(
+				OUT INT32* recvBufBytes /*= NULL*/,
+				OUT INT32* sendBufBytes /*= NULL*/
+				) const;
+
+	// 设置posting执行端参数
+	// @maxPendingBytes[in] 最大缓冲大小（字节，<0表示不改变此项，==0表示恢复默认值，默认ISCM_POSTING_PENDING_BUFFER_SIZE）
+	// @maxPendings[in] 最大缓冲调用数量（个，<0表示不改变此项，==0表示恢复默认值，默认ISCM_POSTING_MAX_PENDINGS）
+	void SetPostingPendingParameters(
+				IN INT32 maxPendingBytes /*= -1*/,
+				IN INT32 maxPendings /*= -1*/
+				);
+	void GetPostingPendingParameters(
+				OUT INT32* maxPendingBytes /*= NULL*/,
+				OUT INT32* maxPendings /*= NULL*/
+				) const;
+
+	// 设置posting调用端参数
+	// @maxBufferingSize[in] 最大缓冲大小（字节，<0表示不改变此项，==0表示恢复默认值，默认ISCM_POSTING_SEND_BUFFER_SIZE）
+	// @maxSendings[in] 最大缓冲调用数量（个，<0表示不改变此项，==0表示恢复默认值，默认ISCM_POSTING_MAX_SENDINGS）
+	void SetPostingSendParameters(
+				IN INT32 maxBufferingSize /*= -1*/,
+				IN INT32 maxSendings /*= -1*/
+				);
+	void GetPostingSendParameters(
+				OUT INT32* maxBufferingSize /*= NULL*/,
+				OUT INT32* maxSendings /*= NULL*/
+				) const;
+
+	// 清理会话的posting回调发送队列
+	TCPSError CleanPostingSendingQueue();
+	static TCPSError CleanPostingSendingQueue(
+				IN const PPCC_Deploy_S_* sessions,
+				IN INT_PTR sessionsCount
+				);
+
+	// 回调匹配检查支持
+public:
+	struct CallbackMatchingFlag
+	{
+		struct Info
+		{
+			BOOL* pMatchingVar;
+			BOOL isPosting;
+			Info(BOOL* p, BOOL is) : pMatchingVar(p), isPosting(is) {}
+		};
+		typedef tcps_QuickStringMap<CPtrStrA, Info, 1> CallbackMap;
+		CallbackMap cbmap_;
+		BOOL matching_SetRedirect_;
+		void Reset();
+		CallbackMatchingFlag();
+	};
+public:
+	// 获取本地与对端回调匹配信息
+	const CallbackMatchingFlag& GetCallbackMatchingFlag(
+				OUT TCPSError* err = NULL
+				);
+
+	// 下面流式调用定义仅用于非C++语言的辅助实现
+private:
+	TCPSError OnStreamedCall_L_(
+				IN const char* methodName,
+				IN INT_PTR nameLen /*= -1*/,
+				IN const void* data /*= NULL*/,
+				IN INT_PTR dataLen /*>= 0*/,
+				OUT LPVOID* replyData /*= NULL*/,
+				OUT INT_PTR* replyLen /*= NULL*/
+				);
+
+public:
+	TCPSError StreamedCallback_(
+				IN const char* callbackName,
+				IN INT_PTR nameLen /*= -1*/,
+				IN const void* data /*= NULL*/,
+				IN INT_PTR dataLen /*>= 0*/,
+				OUT LPVOID* replyData /*= NULL*/,
+				OUT INT_PTR* replyLen /*= NULL*/
+				);
+
+private:
+	TCPSError Login(
+				IN const tcps_String& ticket
+				) method;
+
+private:
+	TCPSError Logout(
+				) method;
+
+private:
+	TCPSError CreateTrunk(
+				IN const tcps_String& trunk
+				) method;
+
+private:
+	TCPSError RemoveTrunk(
+				IN const tcps_String& trunk
+				) method;
+
+private:
+	TCPSError ListTrunk(
+				OUT tcps_Array<tcps_String>& trunks
+				) method;
+
+private:
+	TCPSError AddAuthCenter(
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleTag& authTag,
+				IN const tcps_Array<PCC_ModuleFile>& files
+				) method;
+
+private:
+	TCPSError RemoveAuthCenter(
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleTag& authTag
+				) method;
+
+private:
+	TCPSError ListAuthCenter(
+				IN const tcps_String& trunk,
+				OUT tcps_Array<PCC_ModuleTag>& authTags
+				) method;
+
+private:
+	TCPSError FindAuthCenter(
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleTag& authTag
+				) method;
+
+private:
+	TCPSError AddModule(
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleProperty& moduleProperty,
+				IN const tcps_Array<PCC_ModuleFile>& moudleFiles,
+				OUT INT64& moduleKey
+				) method;
+
+private:
+	TCPSError AddModuleFile(
+				IN const tcps_String& trunk,
+				IN INT64 moduleKey,
+				IN PCC_ModuleFileType fileType,
+				IN const tcps_Array<PCC_ModuleFile>& moduleFiles
+				) method;
+
+private:
+	TCPSError RemoveModule(
+				IN const tcps_String& trunk,
+				IN INT64 moduleKey
+				) method;
+
+private:
+	TCPSError RemoveModuleFiles(
+				IN const tcps_String& trunk,
+				IN INT64 moduleKey,
+				IN INT32 fileType
+				) method;
+
+private:
+	TCPSError ListModules(
+				IN const tcps_String& trunk,
+				OUT tcps_Array<PCC_ModulePropWithKey>& modulesInfo
+				) method;
+
+public:
+	TCPSError SetRedirect_(
+				IN const IPP& redirectIPP,
+				IN const void* redirectParam, IN INT32 redirectParam_len
+				) posting_callback;
+	TCPSError SetRedirect_(
+				IN const IPP& redirectIPP,
+				IN const tcps_Binary& redirectParam
+				) posting_callback
+		{	return this->SetRedirect_(
+							redirectIPP,
+							redirectParam.Get(), redirectParam.Length()
+							);
+		}
+
+public:
+	static TCPSError SetRedirect__Batch(
+				IN const PPCC_Deploy_S_* sessions,
+				IN INT_PTR sessionsCount,
+				IN const IPP& redirectIPP,
+				IN const void* redirectParam, IN INT32 redirectParam_len,
+				OUT PPCC_Deploy_S_* sendFaileds = NULL,
+				OUT INT_PTR* failedCount = NULL
+				) posting_callback;
+	static inline TCPSError SetRedirect__Batch(
+				IN const PPCC_Deploy_S_* sessions,
+				IN INT_PTR sessionsCount,
+				IN const IPP& redirectIPP,
+				IN const tcps_Binary& redirectParam,
+				OUT PPCC_Deploy_S_* sendFaileds = NULL,
+				OUT INT_PTR* failedCount = NULL
+				) posting_callback
+		{	return PCC_Deploy_S::SetRedirect__Batch(
+							sessions, sessionsCount,
+							redirectIPP,
+							redirectParam.Get(), redirectParam.Length(),
+							sendFaileds, failedCount
+							);
+		}
+
+	/////////////////////////////////////////////////////////////
+	////// 在此之后的代码使用者无需关心，为ISCM框架实现代码 /////
+private:
+	void OnNetworkMalformed_()
+		{	this->CloseSession();	}
+
+public:
+	NP_SCATTEREDSessionMaker& m_sessionMaker;
+	NP_SCATTEREDSession* const m_sessionR;
+	IPCC_Deploy_LocalCallback* const m_sessionL;
+	struct TIDFlag_
+	{
+		OSThreadID tid;
+		TIDFlag_() : tid(INVALID_OSTHREADID) {}
+	};
+	TIDFlag_ m_closingTID_L;
+
+private:
+	iscm_PostingSendParam m_postingSendParam;
+
+private:
+	struct CallSiteL_
+	{
+		struct TFunc
+		{
+			PROC fnOnStreamedCallback_L_;
+			TFunc()
+				: fnOnStreamedCallback_L_(NULL)
+				{}
+		};
+		TFunc* func_;
+		CallSiteL_() : func_(NULL) {}
+		~CallSiteL_() { if(func_) tcps_Delete(func_); }
+	};
+	CallSiteL_ m_callSiteL; // m_sessionL!=NULL时有效
+
+private:
+	iscm_MatchingUpdateFlag m_callbackMatchingUpdatedFlag;
+	CallbackMatchingFlag m_callbackMatchingFlag;
+	TCPSError UpdateCallbackMatchingFlag_();
+
+private:
+	TCPSError SetTimeout_(
+				IN INT32 recvTimeout,
+				IN INT32 sendTimeout
+				) posting_method;
+
+private:
+	TCPSError SetSessionBufferSize_(
+				IN INT32 recvBufBytes,
+				IN INT32 sendBufBytes
+				) posting_method;
+
+private:
+	TCPSError MethodCheck_(
+				IN const tcps_Array<tcps_String>& methods,
+				IN const tcps_Array<tcps_String>& methodTypeInfos,
+				OUT tcps_Array<BOOL>& matchingFlags
+				) method;
+
+private:
+	TCPSError CallbackCheck_(
+				IN const tcps_Array<tcps_String>& callbacks,
+				IN const tcps_Array<tcps_String>& callbackTypeInfos,
+				OUT tcps_Array<BOOL>& matchingFlags
+				) callback;
+};
+
 class PCC_Scatter;
 class PCC_Scatter_LS;
 class PCC_Scatter_S : public PCC_Scatter_T
@@ -1762,6 +2105,7 @@ class NP_SCATTEREDSession : public iscm_IRPCSession, public iscm_IUDPSession
 	friend class iscm_SessionRegister;
 	//[[begin_face_friend]]
 	friend class GRID_User_S;
+	friend class PCC_Deploy_S;
 	friend class PCC_Scatter_S;
 	friend class PCC_Service_S;
 	friend class PCC_Toolkit_S;
@@ -1869,6 +2213,23 @@ private:
 	static TCPSError Wrap_GRID_User_SetTimeout_(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) posting_method;
 	static TCPSError Wrap_GRID_User_SetSessionBufferSize_(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) posting_method;
 	static TCPSError Wrap_GRID_User_MethodCheck_(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
+	static TCPSError Wrap_PCC_Deploy_Login(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
+	static TCPSError Wrap_PCC_Deploy_Logout(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
+	static TCPSError Wrap_PCC_Deploy_CreateTrunk(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
+	static TCPSError Wrap_PCC_Deploy_RemoveTrunk(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
+	static TCPSError Wrap_PCC_Deploy_ListTrunk(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
+	static TCPSError Wrap_PCC_Deploy_AddAuthCenter(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
+	static TCPSError Wrap_PCC_Deploy_RemoveAuthCenter(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
+	static TCPSError Wrap_PCC_Deploy_ListAuthCenter(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
+	static TCPSError Wrap_PCC_Deploy_FindAuthCenter(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
+	static TCPSError Wrap_PCC_Deploy_AddModule(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
+	static TCPSError Wrap_PCC_Deploy_AddModuleFile(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
+	static TCPSError Wrap_PCC_Deploy_RemoveModule(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
+	static TCPSError Wrap_PCC_Deploy_RemoveModuleFiles(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
+	static TCPSError Wrap_PCC_Deploy_ListModules(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
+	static TCPSError Wrap_PCC_Deploy_SetTimeout_(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) posting_method;
+	static TCPSError Wrap_PCC_Deploy_SetSessionBufferSize_(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) posting_method;
+	static TCPSError Wrap_PCC_Deploy_MethodCheck_(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
 	static TCPSError Wrap_PCC_Scatter_OnComputed(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) posting_method;
 	static TCPSError Wrap_PCC_Scatter_OnComputed1(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) posting_method;
 	static TCPSError Wrap_PCC_Scatter_UDPLink_(NP_SCATTEREDSession*, void*, iscm_PeerCallFlags, const BYTE*&, INT_PTR&, iscm_IRPCOutfiter*) method;
@@ -1990,6 +2351,7 @@ private:
 	{
 		ftv_InvalidFace,
 		ftv_GRID_User,
+		ftv_PCC_Deploy,
 		ftv_PCC_Scatter,
 		ftv_PCC_Service,
 		ftv_PCC_Toolkit,
@@ -1998,6 +2360,7 @@ private:
 	{
 		void* m_sessionDummyPtr;
 		GRID_User_S* m_gRID_User;
+		PCC_Deploy_S* m_pCC_Deploy;
 		PCC_Scatter_S* m_pCC_Scatter;
 		PCC_Service_S* m_pCC_Service;
 		PCC_Toolkit_S* m_pCC_Toolkit;
@@ -2005,6 +2368,8 @@ private:
 public:
 	GRID_User_S* GetGRID_User()
 		{	return ("GRID_User"==m_bindedInterface ? m_gRID_User : NULL);	}
+	PCC_Deploy_S* GetPCC_Deploy()
+		{	return ("PCC_Deploy"==m_bindedInterface ? m_pCC_Deploy : NULL);	}
 	PCC_Scatter_S* GetPCC_Scatter()
 		{	return ("PCC_Scatter"==m_bindedInterface ? m_pCC_Scatter : NULL);	}
 	PCC_Service_S* GetPCC_Service()

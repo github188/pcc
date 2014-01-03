@@ -324,6 +324,193 @@ TCPSError GRID_User_S::GetGridStatistics(
 }
 
 /////////////////////////////////////////////////////////////////////
+// interface PCC_Deploy
+
+PCC_Deploy_S::PCC_Deploy_S(NP_SCATTEREDSessionMaker& sessionMaker, NP_SCATTEREDSession* sessionR, IPCC_Deploy_LocalCallback* sessionL)
+	: m_sessionMaker(sessionMaker), m_sessionR(sessionR), m_sessionL(sessionL)
+{
+	NPR_ASSERT((NULL==sessionR) != (NULL==sessionL)); // 有且只能为一种模式
+	// TODO: 请添加PCC_Deploy的构造处理
+}
+
+PCC_Deploy_S::~PCC_Deploy_S()
+{
+	// TODO: 请添加PCC_Deploy的析构处理
+}
+
+TCPSError PCC_Deploy_S::OnConnected(
+				IN INT32 sessionKey,
+				IN const IPP& peerID_IPP,
+				IN INT32 sessionCount
+				)
+{
+	// TODO: 请添加接口PCC_Deploy的连接后处理
+
+	NPLogInfo(("PCC_Deploy_S::OnConnected(%d, %s, %d)", sessionKey, IPP_TO_STR_A(peerID_IPP), sessionCount));
+	return TCPS_OK;
+}
+
+void PCC_Deploy_S::OnCallbackReady()
+{
+	// TODO: 请添加接口PCC_Deploy的回调就绪处理
+
+	NPLogInfo(("PCC_Deploy_S::OnCallbackReady()"));
+}
+
+void PCC_Deploy_S::OnPostingCallReady()
+{
+	// TODO: 请添加接口PCC_Deploy的posting回调就绪处理
+
+	NPLogInfo(("PCC_Deploy_S::OnPostingCallReady()"));
+}
+
+void PCC_Deploy_S::OnPeerBroken(
+				IN INT32 sessionKey,
+				IN const IPP& peerID_IPP,
+				IN TCPSError cause
+				)
+{
+	NPLogInfo(("PCC_Deploy_S::OnPeerBroken(%d, %s, %s(%d))", sessionKey, IPP_TO_STR_A(peerID_IPP), tcps_GetErrTxt(cause), cause));
+	// TODO: 请添加接口PCC_Deploy的对端断线处理
+}
+
+void PCC_Deploy_S::OnClose(
+				IN INT32 sessionKey,
+				IN const IPP& peerID_IPP,
+				IN TCPSError cause
+				)
+{
+	NPLogInfo(("PCC_Deploy_S::OnClose(%d, %s, %s(%d))", sessionKey, IPP_TO_STR_A(peerID_IPP), tcps_GetErrTxt(cause), cause));
+	// TODO: 请添加接口PCC_Deploy的连接关闭处理
+}
+
+TCPSError PCC_Deploy_S::Login(
+				IN const tcps_String& ticket
+				) method
+{
+	// TODO: 请实现此函数
+	return TCPS_ERR_NOT_IMPLEMENTED;
+}
+
+TCPSError PCC_Deploy_S::Logout(
+				) method
+{
+	// TODO: 请实现此函数
+	return TCPS_ERR_NOT_IMPLEMENTED;
+}
+
+TCPSError PCC_Deploy_S::CreateTrunk(
+				IN const tcps_String& trunk
+				) method
+{
+	// TODO: 请实现此函数
+	return TCPS_ERR_NOT_IMPLEMENTED;
+}
+
+TCPSError PCC_Deploy_S::RemoveTrunk(
+				IN const tcps_String& trunk
+				) method
+{
+	// TODO: 请实现此函数
+	return TCPS_ERR_NOT_IMPLEMENTED;
+}
+
+TCPSError PCC_Deploy_S::ListTrunk(
+				OUT tcps_Array<tcps_String>& trunks
+				) method
+{
+	// TODO: 请实现此函数
+	return TCPS_ERR_NOT_IMPLEMENTED;
+}
+
+TCPSError PCC_Deploy_S::AddAuthCenter(
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleTag& authTag,
+				IN const tcps_Array<PCC_ModuleFile>& files
+				) method
+{
+	// TODO: 请实现此函数
+	return TCPS_ERR_NOT_IMPLEMENTED;
+}
+
+TCPSError PCC_Deploy_S::RemoveAuthCenter(
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleTag& authTag
+				) method
+{
+	// TODO: 请实现此函数
+	return TCPS_ERR_NOT_IMPLEMENTED;
+}
+
+TCPSError PCC_Deploy_S::ListAuthCenter(
+				IN const tcps_String& trunk,
+				OUT tcps_Array<PCC_ModuleTag>& authTags
+				) method
+{
+	// TODO: 请实现此函数
+	return TCPS_ERR_NOT_IMPLEMENTED;
+}
+
+TCPSError PCC_Deploy_S::FindAuthCenter(
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleTag& authTag
+				) method
+{
+	// TODO: 请实现此函数
+	return TCPS_ERR_NOT_IMPLEMENTED;
+}
+
+TCPSError PCC_Deploy_S::AddModule(
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleProperty& moduleProperty,
+				IN const tcps_Array<PCC_ModuleFile>& moudleFiles,
+				OUT INT64& moduleKey
+				) method
+{
+	// TODO: 请实现此函数
+	return TCPS_ERR_NOT_IMPLEMENTED;
+}
+
+TCPSError PCC_Deploy_S::AddModuleFile(
+				IN const tcps_String& trunk,
+				IN INT64 moduleKey,
+				IN PCC_ModuleFileType fileType,
+				IN const tcps_Array<PCC_ModuleFile>& moduleFiles
+				) method
+{
+	// TODO: 请实现此函数
+	return TCPS_ERR_NOT_IMPLEMENTED;
+}
+
+TCPSError PCC_Deploy_S::RemoveModule(
+				IN const tcps_String& trunk,
+				IN INT64 moduleKey
+				) method
+{
+	// TODO: 请实现此函数
+	return TCPS_ERR_NOT_IMPLEMENTED;
+}
+
+TCPSError PCC_Deploy_S::RemoveModuleFiles(
+				IN const tcps_String& trunk,
+				IN INT64 moduleKey,
+				IN INT32 fileType
+				) method
+{
+	// TODO: 请实现此函数
+	return TCPS_ERR_NOT_IMPLEMENTED;
+}
+
+TCPSError PCC_Deploy_S::ListModules(
+				IN const tcps_String& trunk,
+				OUT tcps_Array<PCC_ModulePropWithKey>& modulesInfo
+				) method
+{
+	// TODO: 请实现此函数
+	return TCPS_ERR_NOT_IMPLEMENTED;
+}
+
+/////////////////////////////////////////////////////////////////////
 // interface PCC_Scatter
 
 PCC_Scatter_S::PCC_Scatter_S(NP_SCATTEREDSessionMaker& sessionMaker, NP_SCATTEREDSession* sessionR, IPCC_Scatter_LocalCallback* sessionL)

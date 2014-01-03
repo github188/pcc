@@ -870,6 +870,187 @@ struct PCC_ModuleInfo
 };
 #endif	// #ifndef PCC_ModuleInfo_defined
 
+#ifndef PCC_ModuleProperty_defined
+#define PCC_ModuleProperty_defined
+struct PCC_ModuleProperty
+{
+	PCC_ModuleTag moduleTag;
+	INT32 modulePattern;
+	INT32 moduleFileType;
+	INT32 moduleType;
+	PCC_ModuleLatency moduleLatency;
+	tcps_String description;
+	INT64 modulePlatform;
+	LTMSEL addTime;
+	INT64 moduleSize;
+
+	PCC_ModuleProperty()
+	{
+		this->modulePattern = 0;
+		this->moduleFileType = 0;
+		this->moduleType = 0;
+		this->moduleLatency = PCC_LATENCY_SMALL;
+		this->modulePlatform = 0;
+		this->addTime = INVALID_UTC_MSEL;
+		this->moduleSize = 0;
+	}
+
+	int Compare(const PCC_ModuleProperty& r) const;
+	ISCM_STRUCT_COMPARE_OPERATORS(PCC_ModuleProperty)
+};
+#endif	// #ifndef PCC_ModuleProperty_defined
+
+#ifndef PCC_ModulePlatform_defined
+#define PCC_ModulePlatform_defined
+enum PCC_ModulePlatform
+{
+	PCC_MODULE_WIN32 = 1,
+	PCC_MODULE_WIN64 = 2,
+};
+#endif	// #ifndef PCC_ModulePlatform_defined
+
+#ifndef PCC_ModulePropWithKey_defined
+#define PCC_ModulePropWithKey_defined
+struct PCC_ModulePropWithKey
+{
+	INT64 key;
+	PCC_ModuleProperty prop;
+
+	PCC_ModulePropWithKey()
+	{
+		this->key = 0;
+	}
+
+	int Compare(const PCC_ModulePropWithKey& r) const;
+	ISCM_STRUCT_COMPARE_OPERATORS(PCC_ModulePropWithKey)
+};
+#endif	// #ifndef PCC_ModulePropWithKey_defined
+
+// 'class PCC_Deploy_T'用于定义接口'PCC_Deploy'的局部类型
+#ifndef PCC_Deploy_T_defined
+#define PCC_Deploy_T_defined
+class PCC_Deploy_T
+{
+};
+
+struct IPCC_Deploy_LocalMethod : public iscm_ILocalMethodBase, public PCC_Deploy_T
+{
+	typedef TCPSError (*FN_OnStreamedCall_L_)(
+				IN void* sessionObj,
+				IN const char* methodName,
+				IN INT_PTR nameLen /*= -1*/,
+				IN const void* data /*= NULL*/,
+				IN INT_PTR dataLen /*>= 0*/,
+				OUT LPVOID* replyData /*= NULL*/,
+				OUT INT_PTR* replyLen /*= NULL*/
+				);
+
+	typedef TCPSError (*FN_Login)(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& ticket
+				) method;
+
+	typedef TCPSError (*FN_Logout)(
+				IN void* sessionObj_wrap
+				) method;
+
+	typedef TCPSError (*FN_CreateTrunk)(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk
+				) method;
+
+	typedef TCPSError (*FN_RemoveTrunk)(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk
+				) method;
+
+	typedef TCPSError (*FN_ListTrunk)(
+				IN void* sessionObj_wrap,
+				OUT tcps_Array<tcps_String>& trunks
+				) method;
+
+	typedef TCPSError (*FN_AddAuthCenter)(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleTag& authTag,
+				IN const tcps_Array<PCC_ModuleFile>& files
+				) method;
+
+	typedef TCPSError (*FN_RemoveAuthCenter)(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleTag& authTag
+				) method;
+
+	typedef TCPSError (*FN_ListAuthCenter)(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				OUT tcps_Array<PCC_ModuleTag>& authTags
+				) method;
+
+	typedef TCPSError (*FN_FindAuthCenter)(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleTag& authTag
+				) method;
+
+	typedef TCPSError (*FN_AddModule)(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleProperty& moduleProperty,
+				IN const tcps_Array<PCC_ModuleFile>& moudleFiles,
+				OUT INT64& moduleKey
+				) method;
+
+	typedef TCPSError (*FN_AddModuleFile)(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				IN INT64 moduleKey,
+				IN PCC_ModuleFileType fileType,
+				IN const tcps_Array<PCC_ModuleFile>& moduleFiles
+				) method;
+
+	typedef TCPSError (*FN_RemoveModule)(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				IN INT64 moduleKey
+				) method;
+
+	typedef TCPSError (*FN_RemoveModuleFiles)(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				IN INT64 moduleKey,
+				IN INT32 fileType
+				) method;
+
+	typedef TCPSError (*FN_ListModules)(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				OUT tcps_Array<PCC_ModulePropWithKey>& modulesInfo
+				) method;
+};
+
+struct IPCC_Deploy_LocalCallback : public iscm_ILocalCallbackBase, public PCC_Deploy_T
+{
+	typedef TCPSError (*FN_OnStreamedCallback_L_)(
+				IN void* sessionObj,
+				IN const char* callbackName,
+				IN INT_PTR nameLen /*= -1*/,
+				IN const void* data /*= NULL*/,
+				IN INT_PTR dataLen /*>= 0*/,
+				OUT LPVOID* replyData /*= NULL*/,
+				OUT INT_PTR* replyLen /*= NULL*/
+				);
+};
+
+typedef TCPSError (*FNMakeLocalSession_PCC_Deploy)(
+			IN const IPP& clientID_IPP,
+			IN NP_SCATTEREDSessionMaker& sessionMaker,
+			OUT IPCC_Deploy_LocalMethod*& methodHandler,
+			IN IPCC_Deploy_LocalCallback* callbackHandler
+			);
+#endif	// #ifndef PCC_Deploy_T_defined
+
 // 'class PCC_Scatter_T'用于定义接口'PCC_Scatter'的局部类型
 #ifndef PCC_Scatter_T_defined
 #define PCC_Scatter_T_defined
@@ -1070,62 +1251,6 @@ typedef TCPSError (*FNMakeLocalSession_PCC_Service)(
 			IN IPCC_Service_LocalCallback* callbackHandler
 			);
 #endif	// #ifndef PCC_Service_T_defined
-
-#ifndef PCC_ModulePlatform_defined
-#define PCC_ModulePlatform_defined
-enum PCC_ModulePlatform
-{
-	PCC_MODULE_WIN32 = 1,
-	PCC_MODULE_WIN64 = 2,
-};
-#endif	// #ifndef PCC_ModulePlatform_defined
-
-#ifndef PCC_ModuleProperty_defined
-#define PCC_ModuleProperty_defined
-struct PCC_ModuleProperty
-{
-	PCC_ModuleTag moduleTag;
-	INT32 modulePattern;
-	INT32 moduleFileType;
-	INT32 moduleType;
-	PCC_ModuleLatency moduleLatency;
-	tcps_String description;
-	INT64 modulePlatform;
-	LTMSEL addTime;
-	INT64 moduleSize;
-
-	PCC_ModuleProperty()
-	{
-		this->modulePattern = 0;
-		this->moduleFileType = 0;
-		this->moduleType = 0;
-		this->moduleLatency = PCC_LATENCY_SMALL;
-		this->modulePlatform = 0;
-		this->addTime = INVALID_UTC_MSEL;
-		this->moduleSize = 0;
-	}
-
-	int Compare(const PCC_ModuleProperty& r) const;
-	ISCM_STRUCT_COMPARE_OPERATORS(PCC_ModuleProperty)
-};
-#endif	// #ifndef PCC_ModuleProperty_defined
-
-#ifndef PCC_ModulePropWithKey_defined
-#define PCC_ModulePropWithKey_defined
-struct PCC_ModulePropWithKey
-{
-	INT64 key;
-	PCC_ModuleProperty prop;
-
-	PCC_ModulePropWithKey()
-	{
-		this->key = 0;
-	}
-
-	int Compare(const PCC_ModulePropWithKey& r) const;
-	ISCM_STRUCT_COMPARE_OPERATORS(PCC_ModulePropWithKey)
-};
-#endif	// #ifndef PCC_ModulePropWithKey_defined
 
 // 'class PCC_Toolkit_T'用于定义接口'PCC_Toolkit'的局部类型
 #ifndef PCC_Toolkit_T_defined
@@ -1784,27 +1909,6 @@ typedef TCPSError (*FNMakeLocalSession_PCC_Toolkit)(
 	}
 #endif	// #ifndef PCC_ModuleInfo_Compare_defined
 
-#ifndef PCC_Service_ExecuteState_Compare_defined
-	#define PCC_Service_ExecuteState_Compare_defined
-	inline int PCC_Service_T::ExecuteState::Compare(const ExecuteState& r) const
-	{
-		int cmp = 0;
-		cmp = SimpleTypeCompare_(this->progress, r.progress);
-		if(0 != cmp)
-			return cmp;
-		cmp = SimpleTypeCompare_(this->errorCode, r.errorCode);
-		if(0 != cmp)
-			return cmp;
-		cmp = SimpleTypeCompare_(this->commitTime, r.commitTime);
-		if(0 != cmp)
-			return cmp;
-		cmp = SimpleTypeCompare_(this->costedTime, r.costedTime);
-		if(0 != cmp)
-			return cmp;
-		return 0;
-	}
-#endif	// #ifndef PCC_Service_ExecuteState_Compare_defined
-
 #ifndef PCC_ModuleProperty_Compare_defined
 	#define PCC_ModuleProperty_Compare_defined
 	inline int PCC_ModuleProperty::Compare(const PCC_ModuleProperty& r) const
@@ -1855,6 +1959,27 @@ typedef TCPSError (*FNMakeLocalSession_PCC_Toolkit)(
 		return 0;
 	}
 #endif	// #ifndef PCC_ModulePropWithKey_Compare_defined
+
+#ifndef PCC_Service_ExecuteState_Compare_defined
+	#define PCC_Service_ExecuteState_Compare_defined
+	inline int PCC_Service_T::ExecuteState::Compare(const ExecuteState& r) const
+	{
+		int cmp = 0;
+		cmp = SimpleTypeCompare_(this->progress, r.progress);
+		if(0 != cmp)
+			return cmp;
+		cmp = SimpleTypeCompare_(this->errorCode, r.errorCode);
+		if(0 != cmp)
+			return cmp;
+		cmp = SimpleTypeCompare_(this->commitTime, r.commitTime);
+		if(0 != cmp)
+			return cmp;
+		cmp = SimpleTypeCompare_(this->costedTime, r.costedTime);
+		if(0 != cmp)
+			return cmp;
+		return 0;
+	}
+#endif	// #ifndef PCC_Service_ExecuteState_Compare_defined
 
 
 /////////////////////////////////////////////////////////////////////

@@ -194,6 +194,24 @@ void NP_SCATTEREDSession::InitFTVMap_()
 	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("GRID_User::SetTimeout_"), MethodSite_(&NP_SCATTEREDSession::Wrap_GRID_User_SetTimeout_, true))).second);
 	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("GRID_User::SetSessionBufferSize_"), MethodSite_(&NP_SCATTEREDSession::Wrap_GRID_User_SetSessionBufferSize_, true))).second);
 	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("GRID_User::MethodCheck_"), MethodSite_(&NP_SCATTEREDSession::Wrap_GRID_User_MethodCheck_, false))).second);
+	VERIFY(ftvMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy"), ftv_PCC_Deploy)).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::Login"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_Login, false))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::Logout"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_Logout, false))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::CreateTrunk"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_CreateTrunk, false))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::RemoveTrunk"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_RemoveTrunk, false))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::ListTrunk"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_ListTrunk, false))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::AddAuthCenter"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_AddAuthCenter, false))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::RemoveAuthCenter"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_RemoveAuthCenter, false))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::ListAuthCenter"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_ListAuthCenter, false))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::FindAuthCenter"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_FindAuthCenter, false))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::AddModule"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_AddModule, false))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::AddModuleFile"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_AddModuleFile, false))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::RemoveModule"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_RemoveModule, false))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::RemoveModuleFiles"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_RemoveModuleFiles, false))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::ListModules"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_ListModules, false))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::SetTimeout_"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_SetTimeout_, true))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::SetSessionBufferSize_"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_SetSessionBufferSize_, true))).second);
+	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Deploy::MethodCheck_"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Deploy_MethodCheck_, false))).second);
 	VERIFY(ftvMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Scatter"), ftv_PCC_Scatter)).second);
 	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Scatter::OnComputed"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Scatter_OnComputed, true))).second);
 	VERIFY(mdCallMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("PCC_Scatter::OnComputed1"), MethodSite_(&NP_SCATTEREDSession::Wrap_PCC_Scatter_OnComputed1, true))).second);
@@ -371,6 +389,23 @@ void NP_SCATTEREDSession::OnClose(
 				m_gRID_User->~GRID_User_S();
 				tcps_Free(m_gRID_User);
 				m_gRID_User = NULL;
+			}
+			break;
+
+			case ftv_PCC_Deploy:
+			{
+				ASSERT(m_pCC_Deploy && "PCC_Deploy"==m_bindedInterface);
+				m_sessionMaker.m_sessionRegister.Unregister(m_pCC_Deploy);
+				ISCM_BEGIN_TRY_()
+					if(TCPS_OK!=cause && TCPS_ERR_SESSION_DROPED!=cause && TCPS_ERR_EXITING!=cause && TCPS_ERR_SERVE_EXITING!=cause)
+						m_pCC_Deploy->OnPeerBroken(sessionKey, m_peerID_IPP, cause);
+					m_pCC_Deploy->OnClose(sessionKey, m_peerID_IPP, cause);
+				ISCM_END_TRY_()
+				ISCM_BEGIN_CATCH_ALL_()
+				ISCM_END_CATCH_ALL_()
+				m_pCC_Deploy->~PCC_Deploy_S();
+				tcps_Free(m_pCC_Deploy);
+				m_pCC_Deploy = NULL;
 			}
 			break;
 
@@ -616,6 +651,51 @@ TCPSError NP_SCATTEREDSession::OnCall(
 					m_gRID_User->~GRID_User_S();
 					tcps_Free(m_gRID_User);
 					m_gRID_User = NULL;
+					destroySession = true;
+					return err;
+				}
+			}
+			break;
+
+			case ftv_PCC_Deploy:
+			{
+				ASSERT(NULL==m_pCC_Deploy && 0==strcmp("PCC_Deploy", faceName));
+				m_pCC_Deploy = tcps_NewEx(PCC_Deploy_S, (m_sessionMaker, this, NULL));
+				TCPSError err = TCPS_ERROR;
+				try
+				{
+					err = m_pCC_Deploy->OnConnected(sessionKey, peerID_IPP, sessionCount2);
+				}
+				catch(TCPSError ret)
+				{
+					ASSERT(TCPS_OK != ret);
+					err = ret;
+				}
+				catch(int ret)
+				{
+					ASSERT(TCPS_OK != ret);
+					err = (TCPSError)ret;
+				}
+				catch(std::bad_alloc)
+				{
+					NPLogError(("PCC_Deploy_S::OnConnected(), Out of memory"));
+					err = TCPS_ERR_OUT_OF_MEMORY;
+				}
+				ISCM_BEGIN_CATCH_ALL_()
+					NPLogError(("PCC_Deploy_S::OnConnected(), Unknown exception"));
+					err = TCPS_ERR_UNKNOWN_EXCEPTION;
+				ISCM_END_CATCH_ALL_()
+				if(TCPS_OK != err)
+				{
+					ISCM_BEGIN_TRY_()
+						m_pCC_Deploy->OnClose(sessionKey, peerID_IPP, err);
+					ISCM_END_TRY_()
+					ISCM_BEGIN_CATCH_ALL_()
+					ISCM_END_CATCH_ALL_()
+					m_sessionMaker.OnSessionClosed_();
+					m_pCC_Deploy->~PCC_Deploy_S();
+					tcps_Free(m_pCC_Deploy);
+					m_pCC_Deploy = NULL;
 					destroySession = true;
 					return err;
 				}
@@ -1012,6 +1092,9 @@ TCPSError NP_SCATTEREDSession::BindCallbackSocket_(
 			case ftv_GRID_User:
 				m_gRID_User->OnCallbackReady();
 				break;
+			case ftv_PCC_Deploy:
+				m_pCC_Deploy->OnCallbackReady();
+				break;
 			case ftv_PCC_Scatter:
 				m_pCC_Scatter->OnCallbackReady();
 				break;
@@ -1067,6 +1150,11 @@ TCPSError NP_SCATTEREDSession::BindPostingSocket_(
 				if(!m_gRID_User->m_postingSendParam.IsDefault())
 					iscm_FetchPostingCallerMan().SetBufferingParam(m_postingProxy.callerKey_, m_gRID_User->m_postingSendParam.maxSendingBytes_, m_gRID_User->m_postingSendParam.maxSendings_);
 				m_gRID_User->OnPostingCallReady();
+				break;
+			case ftv_PCC_Deploy:
+				if(!m_pCC_Deploy->m_postingSendParam.IsDefault())
+					iscm_FetchPostingCallerMan().SetBufferingParam(m_postingProxy.callerKey_, m_pCC_Deploy->m_postingSendParam.maxSendingBytes_, m_pCC_Deploy->m_postingSendParam.maxSendings_);
+				m_pCC_Deploy->OnPostingCallReady();
 				break;
 			case ftv_PCC_Scatter:
 				if(!m_pCC_Scatter->m_postingSendParam.IsDefault())
@@ -1431,6 +1519,63 @@ static int s_GRID_User_MethodCheck__TypeInfo_len_ = 0;
 
 static const char* s_GRID_User_CallbackCheck__TypeInfo_ = NULL;
 static int s_GRID_User_CallbackCheck__TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_Login_TypeInfo_ = NULL;
+static int s_PCC_Deploy_Login_TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_Logout_TypeInfo_ = NULL;
+static int s_PCC_Deploy_Logout_TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_CreateTrunk_TypeInfo_ = NULL;
+static int s_PCC_Deploy_CreateTrunk_TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_RemoveTrunk_TypeInfo_ = NULL;
+static int s_PCC_Deploy_RemoveTrunk_TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_ListTrunk_TypeInfo_ = NULL;
+static int s_PCC_Deploy_ListTrunk_TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_AddAuthCenter_TypeInfo_ = NULL;
+static int s_PCC_Deploy_AddAuthCenter_TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_RemoveAuthCenter_TypeInfo_ = NULL;
+static int s_PCC_Deploy_RemoveAuthCenter_TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_ListAuthCenter_TypeInfo_ = NULL;
+static int s_PCC_Deploy_ListAuthCenter_TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_FindAuthCenter_TypeInfo_ = NULL;
+static int s_PCC_Deploy_FindAuthCenter_TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_AddModule_TypeInfo_ = NULL;
+static int s_PCC_Deploy_AddModule_TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_AddModuleFile_TypeInfo_ = NULL;
+static int s_PCC_Deploy_AddModuleFile_TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_RemoveModule_TypeInfo_ = NULL;
+static int s_PCC_Deploy_RemoveModule_TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_RemoveModuleFiles_TypeInfo_ = NULL;
+static int s_PCC_Deploy_RemoveModuleFiles_TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_ListModules_TypeInfo_ = NULL;
+static int s_PCC_Deploy_ListModules_TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_SetRedirect__TypeInfo_ = NULL;
+static int s_PCC_Deploy_SetRedirect__TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_SetTimeout__TypeInfo_ = NULL;
+static int s_PCC_Deploy_SetTimeout__TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_SetSessionBufferSize__TypeInfo_ = NULL;
+static int s_PCC_Deploy_SetSessionBufferSize__TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_MethodCheck__TypeInfo_ = NULL;
+static int s_PCC_Deploy_MethodCheck__TypeInfo_len_ = 0;
+
+static const char* s_PCC_Deploy_CallbackCheck__TypeInfo_ = NULL;
+static int s_PCC_Deploy_CallbackCheck__TypeInfo_len_ = 0;
 
 static const char* s_PCC_Scatter_Compute_TypeInfo_ = NULL;
 static int s_PCC_Scatter_Compute_TypeInfo_len_ = 0;
@@ -2340,6 +2485,307 @@ static INT_PTR InitializeAllCallsTypeInfo_()
 	{
 		BYTE const chZipped[] =
 		{
+			0x12,0x00,0x00,0x80,0x78,0x01,0xCB,0x4D,0x2D,0xC9,0xC8,0x4F,0xA9,0xF1,0xF4,0xAB,
+			0x29,0x2E,0x29,0xCA,0xCC,0x4B,0xD7,0x61,0x00,0x00,0x46,0x0C,0x06,0xD4,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_Login_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_Login_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x08,0x00,0x00,0x80,0x78,0x01,0xCB,0x4D,0x2D,0xC9,0xC8,0x4F,0xA9,0x61,0x00,0x00,
+			0x0E,0xD3,0x02,0xFE,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_Logout_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_Logout_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x12,0x00,0x00,0x80,0x78,0x01,0xCB,0x4D,0x2D,0xC9,0xC8,0x4F,0xA9,0xF1,0xF4,0xAB,
+			0x29,0x2E,0x29,0xCA,0xCC,0x4B,0xD7,0x61,0x00,0x00,0x46,0x0C,0x06,0xD4,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_CreateTrunk_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_CreateTrunk_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x12,0x00,0x00,0x80,0x78,0x01,0xCB,0x4D,0x2D,0xC9,0xC8,0x4F,0xA9,0xF1,0xF4,0xAB,
+			0x29,0x2E,0x29,0xCA,0xCC,0x4B,0xD7,0x61,0x00,0x00,0x46,0x0C,0x06,0xD4,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_RemoveTrunk_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_RemoveTrunk_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x1A,0x00,0x00,0x80,0x78,0x01,0xCB,0x4D,0x2D,0xC9,0xC8,0x4F,0xA9,0xF1,0x0F,0x0D,
+			0xA9,0x49,0x2C,0x2A,0x4A,0xAC,0xB4,0x29,0x2E,0x29,0xCA,0xCC,0x4B,0xB7,0xD3,0x61,
+			0x00,0x00,0x8D,0xB9,0x09,0xCE,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_ListTrunk_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_ListTrunk_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0xAC,0x00,0x00,0x80,0x78,0x01,0x0B,0x70,0x76,0x8E,0xF7,0xCD,0x4F,0x29,0xCD,0x49,
+			0x75,0xCB,0xCC,0x49,0x55,0x29,0x2E,0x29,0xCA,0xCC,0x4B,0xD7,0x49,0xCA,0xCC,0x4B,
+			0x2C,0xAA,0xD4,0x71,0xF2,0xF7,0xF7,0xD1,0xB1,0x0E,0x80,0x2B,0x09,0x49,0x4C,0x87,
+			0xA9,0x40,0x08,0x86,0xA5,0x16,0x15,0x67,0xE6,0xE7,0x21,0xAB,0x83,0x0A,0xA9,0x78,
+			0xFA,0x85,0x18,0x1B,0xE9,0x20,0x93,0xD6,0xB9,0xA9,0x25,0x19,0xF9,0x29,0x35,0x9E,
+			0x7E,0x35,0x50,0xAB,0x80,0x2C,0x84,0x59,0x40,0x0B,0x80,0xCA,0x6B,0x12,0x8B,0x8A,
+			0x12,0x2B,0x6D,0x10,0xC2,0x20,0xA7,0xD9,0xE9,0x30,0x00,0x00,0x67,0x88,0x3B,0xDD,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_AddAuthCenter_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_AddAuthCenter_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x70,0x00,0x00,0x80,0x78,0x01,0x0B,0x70,0x76,0x8E,0xF7,0xCD,0x4F,0x29,0xCD,0x49,
+			0x0D,0x49,0x4C,0x57,0x29,0x2E,0x29,0xCA,0xCC,0x4B,0xD7,0x09,0x80,0x0B,0x86,0xA5,
+			0x16,0x15,0x67,0xE6,0xE7,0xE9,0x58,0x63,0x08,0xA9,0x78,0xFA,0x85,0x18,0x1B,0xE9,
+			0x20,0x93,0xD6,0xB9,0xA9,0x25,0x19,0xF9,0x29,0x35,0x9E,0x7E,0x35,0x50,0x83,0x80,
+			0x2C,0x84,0x46,0xA0,0x05,0x3A,0x0C,0x00,0xAB,0xAB,0x26,0xA4,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_RemoveAuthCenter_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_RemoveAuthCenter_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x78,0x00,0x00,0x80,0x78,0x01,0x0B,0x70,0x76,0x8E,0xF7,0xCD,0x4F,0x29,0xCD,0x49,
+			0x0D,0x49,0x4C,0x57,0x29,0x2E,0x29,0xCA,0xCC,0x4B,0xD7,0x09,0x80,0x0B,0x86,0xA5,
+			0x16,0x15,0x67,0xE6,0xE7,0xE9,0x58,0x63,0x08,0xA9,0x78,0xFA,0x85,0x18,0x1B,0xE9,
+			0x20,0x93,0xD6,0xB9,0xA9,0x25,0x19,0xF9,0x29,0x35,0x9E,0x7E,0x35,0x50,0x83,0xFC,
+			0x43,0x43,0x6A,0x12,0x8B,0x8A,0x12,0x2B,0x6D,0x10,0xFA,0x81,0xF6,0xD8,0xE9,0x30,
+			0x00,0x00,0xF6,0x2B,0x29,0x9E,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_ListAuthCenter_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_ListAuthCenter_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x70,0x00,0x00,0x80,0x78,0x01,0x0B,0x70,0x76,0x8E,0xF7,0xCD,0x4F,0x29,0xCD,0x49,
+			0x0D,0x49,0x4C,0x57,0x29,0x2E,0x29,0xCA,0xCC,0x4B,0xD7,0x09,0x80,0x0B,0x86,0xA5,
+			0x16,0x15,0x67,0xE6,0xE7,0xE9,0x58,0x63,0x08,0xA9,0x78,0xFA,0x85,0x18,0x1B,0xE9,
+			0x20,0x93,0xD6,0xB9,0xA9,0x25,0x19,0xF9,0x29,0x35,0x9E,0x7E,0x35,0x50,0x83,0x80,
+			0x2C,0x84,0x46,0xA0,0x05,0x3A,0x0C,0x00,0xAB,0xAB,0x26,0xA4,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_FindAuthCenter_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_FindAuthCenter_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x6B,0x01,0x00,0x80,0x78,0x01,0x65,0x50,0xCB,0x0A,0x83,0x30,0x10,0xEC,0xBF,0xD4,
+			0x63,0x0E,0x7D,0xD1,0x8B,0xB5,0x60,0xC5,0x16,0x21,0x3E,0xD0,0xB4,0xD0,0x93,0xA4,
+			0x35,0xD8,0x80,0x4D,0x4A,0x4C,0x0F,0x82,0x1F,0xDF,0x04,0xD4,0x44,0x7A,0x59,0xD8,
+			0xD9,0xD9,0x99,0xD9,0xCD,0x82,0xA0,0x8C,0x79,0xF5,0x6D,0xC8,0x99,0x36,0xC4,0x69,
+			0xA5,0xA0,0xAC,0x06,0x0F,0xCA,0xB0,0xE8,0xC0,0x29,0x4D,0x21,0x70,0xB3,0x89,0x02,
+			0xB1,0x24,0xEC,0xD9,0x2D,0x35,0x02,0x7D,0x14,0x26,0xC1,0xBD,0x2C,0x62,0x1F,0x42,
+			0x6F,0x05,0x6C,0x2C,0x49,0x73,0x85,0x7A,0xEB,0x19,0x08,0xFD,0xFC,0x12,0x7A,0x1B,
+			0x5B,0x2F,0x13,0xFC,0x43,0x84,0xEC,0x1C,0x63,0x81,0x70,0x0D,0xA2,0x04,0x6D,0x37,
+			0xB3,0x6A,0xE6,0x43,0x04,0x30,0x04,0x55,0xD4,0xFD,0x0E,0x40,0x14,0x17,0x21,0xD4,
+			0x1B,0xAA,0xB1,0xF2,0x2A,0xB1,0xF1,0x22,0xA3,0x70,0x23,0xA2,0xA5,0x9C,0xD9,0xBC,
+			0x01,0x72,0xFE,0x8D,0xDD,0x37,0x91,0x2F,0x5E,0xF5,0x51,0xD2,0x4F,0x8E,0xBD,0xD1,
+			0x1A,0x0F,0x50,0xD6,0x3D,0x16,0x02,0x77,0x07,0x33,0xD3,0xFF,0x3C,0x82,0xF4,0x8A,
+			0xD4,0xB2,0xCE,0xB5,0xF8,0x01,0xAA,0xE0,0x78,0x5A,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_AddModule_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_AddModule_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0xC1,0x00,0x00,0x80,0x78,0x01,0x0B,0x70,0x76,0x8E,0xF7,0xCD,0x4F,0x29,0xCD,0x49,
+			0x75,0xCB,0xCC,0x49,0x55,0x29,0x2E,0x29,0xCA,0xCC,0x4B,0xD7,0x49,0xCA,0xCC,0x4B,
+			0x2C,0xAA,0xD4,0x71,0xF2,0xF7,0xF7,0xD1,0xB1,0x0E,0x40,0x51,0x12,0x52,0x59,0x90,
+			0xAA,0x0C,0x16,0xF2,0x77,0x09,0xF5,0x71,0x8D,0xF7,0x75,0x74,0xF6,0xF0,0xF4,0x73,
+			0x8D,0x0F,0x72,0x0C,0xB7,0x35,0xD4,0x41,0x92,0x70,0xF6,0xF7,0x0B,0x09,0xF2,0xF7,
+			0xB1,0x35,0x42,0x16,0xF4,0x08,0xF1,0xF5,0xB1,0x35,0xD1,0xB1,0xCE,0x4D,0x2D,0xC9,
+			0xC8,0x4F,0xA9,0xF1,0xF4,0xAB,0x81,0xDA,0x08,0x64,0x79,0xFA,0x85,0x98,0x99,0xE8,
+			0x00,0x19,0x98,0x16,0x82,0x44,0x13,0x8B,0x8A,0x12,0x2B,0x6D,0x50,0xE5,0xEC,0x74,
+			0x18,0x00,0x48,0x5C,0x40,0x2C,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_AddModuleFile_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_AddModuleFile_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x1B,0x00,0x00,0x80,0x78,0x01,0xCB,0x4D,0x2D,0xC9,0xC8,0x4F,0xA9,0xF1,0xF4,0xAB,
+			0x29,0x2E,0x29,0xCA,0xCC,0x4B,0xD7,0x01,0xB2,0x3C,0xFD,0x42,0xCC,0x4C,0x74,0x18,
+			0x00,0x94,0x3B,0x09,0x68,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_RemoveModule_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_RemoveModule_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x24,0x00,0x00,0x80,0x78,0x01,0xCB,0x4D,0x2D,0xC9,0xC8,0x4F,0xA9,0xF1,0xF4,0xAB,
+			0x29,0x2E,0x29,0xCA,0xCC,0x4B,0xD7,0x01,0xB2,0x3C,0xFD,0x42,0xCC,0x4C,0xA0,0x0C,
+			0x63,0x23,0x1D,0x06,0x00,0xF9,0x8C,0x0B,0xF7,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_RemoveModuleFiles_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_RemoveModuleFiles_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x60,0x01,0x00,0x80,0x78,0x01,0x5D,0x8F,0x5F,0x0B,0x82,0x30,0x14,0xC5,0xFB,0x2E,
+			0xF9,0xB8,0x87,0xFE,0xD1,0x8B,0x19,0x88,0x48,0x48,0x73,0x8A,0xAE,0xA2,0x27,0x19,
+			0x39,0x52,0x28,0x17,0x73,0x3D,0x0C,0xFC,0xF0,0x6D,0x36,0xD8,0xF4,0x65,0xB0,0x73,
+			0xCF,0xF9,0xDD,0x73,0xF3,0x28,0xAA,0x52,0x56,0x7F,0x5F,0x14,0x12,0x41,0xBB,0x87,
+			0x5C,0xE6,0x4A,0x81,0x21,0x8E,0x51,0x74,0xAF,0xCA,0x34,0x84,0x30,0x58,0x01,0x57,
+			0x43,0x59,0xA1,0xD4,0x60,0x3D,0x11,0x61,0x58,0x9C,0xE2,0x60,0x03,0x7C,0xED,0xFC,
+			0xF3,0x72,0xCE,0x3E,0xB7,0x56,0x34,0x67,0x2A,0xBD,0x04,0xE1,0xFD,0x6E,0x0C,0xD8,
+			0x19,0xE5,0x42,0xCE,0xFD,0x5A,0xF3,0x2C,0x02,0x93,0x27,0x50,0xD1,0xED,0x66,0xF2,
+			0xDA,0xB9,0xA9,0x0C,0x7A,0xC1,0xDB,0x6E,0xB4,0xAA,0x2D,0x10,0xA7,0x65,0x0C,0x75,
+			0x42,0x7D,0x9C,0x3E,0x0A,0xE6,0x19,0xA3,0x25,0x5C,0x29,0xEF,0x5B,0xD6,0xB9,0x3E,
+			0x23,0xE9,0xCE,0xB3,0xC5,0xFE,0x9B,0x8A,0x86,0xD5,0x43,0x82,0x06,0x03,0xCA,0x2E,
+			0x78,0x20,0x9C,0x13,0x79,0xB0,0x48,0xE7,0xEE,0x23,0x58,0xFC,0x00,0x4E,0xA3,0x75,
+			0x34,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_ListModules_TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_ListModules_TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x23,0x00,0x00,0x80,0x78,0x01,0x2B,0xC8,0x2F,0x2E,0xC9,0xCC,0x4B,0x8F,0x4F,0x4E,
+			0xCC,0xC9,0x49,0x4A,0x4C,0xCE,0xAE,0xF1,0xF4,0xAB,0xF1,0x0C,0x08,0xD0,0x01,0x52,
+			0x49,0x99,0x79,0x89,0x45,0x95,0x3A,0x0C,0x00,0xF8,0x4D,0x0C,0xF9,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_SetRedirect__TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_SetRedirect__TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x22,0x00,0x00,0x80,0x78,0x01,0x2B,0xC8,0x2F,0x2E,0xC9,0xCC,0x4B,0x8F,0xCF,0x4D,
+			0x2D,0xC9,0xC8,0x4F,0xA9,0xF1,0xF4,0x03,0xA2,0x10,0x63,0x23,0x1D,0x38,0x83,0x01,
+			0x00,0xE4,0xB8,0x0B,0x7F,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_SetTimeout__TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_SetTimeout__TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x22,0x00,0x00,0x80,0x78,0x01,0x2B,0xC8,0x2F,0x2E,0xC9,0xCC,0x4B,0x8F,0xCF,0x4D,
+			0x2D,0xC9,0xC8,0x4F,0xA9,0xF1,0xF4,0x03,0xA2,0x10,0x63,0x23,0x1D,0x38,0x83,0x01,
+			0x00,0xE4,0xB8,0x0B,0x7F,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_SetSessionBufferSize__TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_SetSessionBufferSize__TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x3A,0x00,0x00,0x80,0x78,0x01,0xCB,0x4D,0x2D,0xC9,0xC8,0x4F,0xA9,0xF1,0xF4,0xAB,
+			0x49,0x2C,0x2A,0x4A,0xAC,0xB4,0x29,0x2E,0x29,0xCA,0xCC,0x4B,0xB7,0xD3,0xC1,0x10,
+			0xF0,0x0F,0x0D,0x81,0x2A,0x71,0xF2,0xF7,0xF7,0xB1,0xD3,0x61,0x00,0x00,0x9A,0x78,
+			0x15,0x41,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_MethodCheck__TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_MethodCheck__TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
+			0x3C,0x00,0x00,0x80,0x78,0x01,0x4B,0x4E,0xCC,0xC9,0x49,0x4A,0x4C,0xCE,0xAE,0xF1,
+			0xF4,0xAB,0x49,0x2C,0x2A,0x4A,0xAC,0xB4,0x29,0x2E,0x29,0xCA,0xCC,0x4B,0xB7,0xD3,
+			0xC1,0x10,0xF0,0x0F,0x0D,0x81,0x2A,0x71,0xF2,0xF7,0xF7,0xB1,0xD3,0x61,0x00,0x00,
+			0xC2,0xD8,0x15,0xED,
+		};
+		static CBinary idTxt;
+		CBinary& bin = idTxt;
+		VERIFY(QuickUnzip(chZipped, sizeof(chZipped), bin));
+		s_PCC_Deploy_CallbackCheck__TypeInfo_ = (const char*)bin.Get();
+		s_PCC_Deploy_CallbackCheck__TypeInfo_len_ = bin.Length()-1;
+	}
+
+	{
+		BYTE const chZipped[] =
+		{
 			0x42,0x00,0x00,0x80,0x78,0x01,0x2B,0xC8,0x2F,0x2E,0xC9,0xCC,0x4B,0x8F,0x4F,0x4E,
 			0xCC,0xC9,0x49,0x4A,0x4C,0xCE,0xAE,0xF1,0xF4,0x03,0xA2,0x10,0x33,0x13,0x1D,0x64,
 			0x46,0x71,0x49,0x11,0x50,0x11,0x48,0x08,0xC1,0x4A,0xCA,0xCC,0x4B,0x2C,0xAA,0xD4,
@@ -2955,13 +3401,13 @@ static INT_PTR InitializeAllCallsTypeInfo_()
 
 struct NP_SCATTERED_AllMethodCallsTypeInfo_
 {
-	const char* typeInfos[45];
+	const char* typeInfos[59];
 };
 static NP_SCATTERED_AllMethodCallsTypeInfo_& NP_SCATTERED_GetAllMethodCallsTypeInfo_Impl_(
 				OUT INT_PTR& methods
 				)
 {
-	methods = 45;
+	methods = 59;
 	BEGIN_LOCAL_SAFE_STATIC_OBJ(NP_SCATTERED_AllMethodCallsTypeInfo_, infosObj);
 	InitializeAllCallsTypeInfo_();
 	infosObj.typeInfos[0] = s_GRID_User_AddJobProgram_TypeInfo_;
@@ -2993,22 +3439,36 @@ static NP_SCATTERED_AllMethodCallsTypeInfo_& NP_SCATTERED_GetAllMethodCallsTypeI
 	infosObj.typeInfos[26] = s_GRID_User_ListSplitters_TypeInfo_;
 	infosObj.typeInfos[27] = s_GRID_User_ListSplitterParam_TypeInfo_;
 	infosObj.typeInfos[28] = s_GRID_User_GetGridStatistics_TypeInfo_;
-	infosObj.typeInfos[29] = s_PCC_Scatter_OnComputed_TypeInfo_;
-	infosObj.typeInfos[30] = s_PCC_Scatter_OnComputed1_TypeInfo_;
-	infosObj.typeInfos[31] = s_PCC_Service_Login_TypeInfo_;
-	infosObj.typeInfos[32] = s_PCC_Service_Logout_TypeInfo_;
-	infosObj.typeInfos[33] = s_PCC_Service_ListModules_TypeInfo_;
-	infosObj.typeInfos[34] = s_PCC_Service_GetModuleFile_TypeInfo_;
-	infosObj.typeInfos[35] = s_PCC_Service_Execute_TypeInfo_;
-	infosObj.typeInfos[36] = s_PCC_Service_QueryJobs_TypeInfo_;
-	infosObj.typeInfos[37] = s_PCC_Service_CancelJob_TypeInfo_;
-	infosObj.typeInfos[38] = s_PCC_Toolkit_Login_TypeInfo_;
-	infosObj.typeInfos[39] = s_PCC_Toolkit_Logout_TypeInfo_;
-	infosObj.typeInfos[40] = s_PCC_Toolkit_AddModule_TypeInfo_;
-	infosObj.typeInfos[41] = s_PCC_Toolkit_AddModuleFile_TypeInfo_;
-	infosObj.typeInfos[42] = s_PCC_Toolkit_RemoveModule_TypeInfo_;
-	infosObj.typeInfos[43] = s_PCC_Toolkit_RemoveModuleFiles_TypeInfo_;
-	infosObj.typeInfos[44] = s_PCC_Toolkit_ListModules_TypeInfo_;
+	infosObj.typeInfos[29] = s_PCC_Deploy_Login_TypeInfo_;
+	infosObj.typeInfos[30] = s_PCC_Deploy_Logout_TypeInfo_;
+	infosObj.typeInfos[31] = s_PCC_Deploy_CreateTrunk_TypeInfo_;
+	infosObj.typeInfos[32] = s_PCC_Deploy_RemoveTrunk_TypeInfo_;
+	infosObj.typeInfos[33] = s_PCC_Deploy_ListTrunk_TypeInfo_;
+	infosObj.typeInfos[34] = s_PCC_Deploy_AddAuthCenter_TypeInfo_;
+	infosObj.typeInfos[35] = s_PCC_Deploy_RemoveAuthCenter_TypeInfo_;
+	infosObj.typeInfos[36] = s_PCC_Deploy_ListAuthCenter_TypeInfo_;
+	infosObj.typeInfos[37] = s_PCC_Deploy_FindAuthCenter_TypeInfo_;
+	infosObj.typeInfos[38] = s_PCC_Deploy_AddModule_TypeInfo_;
+	infosObj.typeInfos[39] = s_PCC_Deploy_AddModuleFile_TypeInfo_;
+	infosObj.typeInfos[40] = s_PCC_Deploy_RemoveModule_TypeInfo_;
+	infosObj.typeInfos[41] = s_PCC_Deploy_RemoveModuleFiles_TypeInfo_;
+	infosObj.typeInfos[42] = s_PCC_Deploy_ListModules_TypeInfo_;
+	infosObj.typeInfos[43] = s_PCC_Scatter_OnComputed_TypeInfo_;
+	infosObj.typeInfos[44] = s_PCC_Scatter_OnComputed1_TypeInfo_;
+	infosObj.typeInfos[45] = s_PCC_Service_Login_TypeInfo_;
+	infosObj.typeInfos[46] = s_PCC_Service_Logout_TypeInfo_;
+	infosObj.typeInfos[47] = s_PCC_Service_ListModules_TypeInfo_;
+	infosObj.typeInfos[48] = s_PCC_Service_GetModuleFile_TypeInfo_;
+	infosObj.typeInfos[49] = s_PCC_Service_Execute_TypeInfo_;
+	infosObj.typeInfos[50] = s_PCC_Service_QueryJobs_TypeInfo_;
+	infosObj.typeInfos[51] = s_PCC_Service_CancelJob_TypeInfo_;
+	infosObj.typeInfos[52] = s_PCC_Toolkit_Login_TypeInfo_;
+	infosObj.typeInfos[53] = s_PCC_Toolkit_Logout_TypeInfo_;
+	infosObj.typeInfos[54] = s_PCC_Toolkit_AddModule_TypeInfo_;
+	infosObj.typeInfos[55] = s_PCC_Toolkit_AddModuleFile_TypeInfo_;
+	infosObj.typeInfos[56] = s_PCC_Toolkit_RemoveModule_TypeInfo_;
+	infosObj.typeInfos[57] = s_PCC_Toolkit_RemoveModuleFiles_TypeInfo_;
+	infosObj.typeInfos[58] = s_PCC_Toolkit_ListModules_TypeInfo_;
 	END_LOCAL_SAFE_STATIC_OBJ(infosObj);
 }
 const char** NP_SCATTERED_GetAllMethodCallsTypeInfo_(
@@ -3035,6 +3495,10 @@ const char* NP_SCATTERED_GetCallbackCallTypeInfo_(
 	{
 		if(0 == strcmp("ReplyCommitJob", callbackName))
 			return s_GRID_User_ReplyCommitJob_TypeInfo_;
+	}
+
+	else if(0 == strcmp("PCC_Deploy", faceName))
+	{
 	}
 
 	else if(0 == strcmp("PCC_Scatter", faceName))
@@ -3070,6 +3534,12 @@ TCPSError MakeLocalSession_GRID_User__(
 			OUT IGRID_User_LocalMethod*& methodHandler,
 			IN IGRID_User_LocalCallback* callbackHandler
 			);
+TCPSError MakeLocalSession_PCC_Deploy__(
+			IN const IPP& clientID_IPP,
+			IN NP_SCATTEREDSessionMaker& sessionMaker,
+			OUT IPCC_Deploy_LocalMethod*& methodHandler,
+			IN IPCC_Deploy_LocalCallback* callbackHandler
+			);
 TCPSError MakeLocalSession_PCC_Scatter__(
 			IN const IPP& clientID_IPP,
 			IN NP_SCATTEREDSessionMaker& sessionMaker,
@@ -3092,6 +3562,7 @@ TCPSError MakeLocalSession_PCC_Toolkit__(
 static void RegisterLocalSessionMakeFunction_(const IPP& serveIPP, NP_SCATTEREDSessionMaker& sessionMaker)
 {
 	NPR_ASSERT(TCPS_OK == iscm_RegisterFunction(serveIPP, "MakeLocalSession_GRID_User", (PROC)MakeLocalSession_GRID_User__, &sessionMaker));
+	NPR_ASSERT(TCPS_OK == iscm_RegisterFunction(serveIPP, "MakeLocalSession_PCC_Deploy", (PROC)MakeLocalSession_PCC_Deploy__, &sessionMaker));
 	NPR_ASSERT(TCPS_OK == iscm_RegisterFunction(serveIPP, "MakeLocalSession_PCC_Scatter", (PROC)MakeLocalSession_PCC_Scatter__, &sessionMaker));
 	NPR_ASSERT(TCPS_OK == iscm_RegisterFunction(serveIPP, "MakeLocalSession_PCC_Service", (PROC)MakeLocalSession_PCC_Service__, &sessionMaker));
 	NPR_ASSERT(TCPS_OK == iscm_RegisterFunction(serveIPP, "MakeLocalSession_PCC_Toolkit", (PROC)MakeLocalSession_PCC_Toolkit__, &sessionMaker));
@@ -3100,6 +3571,7 @@ static void RegisterLocalSessionMakeFunction_(const IPP& serveIPP, NP_SCATTEREDS
 static void UnregisterLocalSessionMakeFunction_(const IPP& serveIPP)
 {
 	NPR_ASSERT(TCPS_OK == iscm_UnregisterFunction(serveIPP, "MakeLocalSession_GRID_User"));
+	NPR_ASSERT(TCPS_OK == iscm_UnregisterFunction(serveIPP, "MakeLocalSession_PCC_Deploy"));
 	NPR_ASSERT(TCPS_OK == iscm_UnregisterFunction(serveIPP, "MakeLocalSession_PCC_Scatter"));
 	NPR_ASSERT(TCPS_OK == iscm_UnregisterFunction(serveIPP, "MakeLocalSession_PCC_Service"));
 	NPR_ASSERT(TCPS_OK == iscm_UnregisterFunction(serveIPP, "MakeLocalSession_PCC_Toolkit"));
@@ -9405,6 +9877,3468 @@ TCPSError MakeLocalSession_GRID_User__(
 			)
 {
 	GRID_User_LS* session = tcps_NewEx(GRID_User_LS, (clientID_IPP, sessionMaker, callbackHandler));
+	if(NULL == session)
+		return TCPS_ERR_OUT_OF_MEMORY;
+	TCPSError err = session->GetConnectError();
+	if(TCPS_OK != err)
+	{
+		tcps_Delete(session);
+		return err;
+	}
+	methodHandler = session;
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_Login(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	if(thisObj && thisObj->m_streamedCallSite.func)
+	{
+		void* replyData = NULL;
+		INT_PTR replyLen = 0;
+		errTcps = thisObj->m_streamedCallSite.func(
+					thisObj->m_streamedCallSite.serverObj,
+					thisObj->m_streamedCallSite.sessionObj,
+					"PCC_Deploy",
+					"Login",
+					ptrInParams,
+					ptrInParamsLen,
+					&replyData,
+					&replyLen
+					);
+		if(TCPS_OK == errTcps)
+		{
+			ptrInParams += ptrInParamsLen;
+			ptrInParamsLen = 0;
+		}
+		ASSERT(outfiter);
+		iscm_RPCReplyPrefix* replyPrefix = (iscm_RPCReplyPrefix*)tcps_Alloc(sizeof(iscm_RPCReplyPrefix));
+		replyPrefix->Init();
+		outfiter->Push(replyPrefix, sizeof(*replyPrefix), true, NULL);
+		if(replyLen > 0)
+			outfiter->Push(replyData, replyLen, true, NULL);
+		return errTcps;
+	}
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN tcps_String ticket
+	IN tcps_String ticket_wrap;
+	GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, ticket_wrap);
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::Login() method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->Login(
+			ticket_wrap
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::Login(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::Login(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_Logout(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	if(thisObj && thisObj->m_streamedCallSite.func)
+	{
+		void* replyData = NULL;
+		INT_PTR replyLen = 0;
+		errTcps = thisObj->m_streamedCallSite.func(
+					thisObj->m_streamedCallSite.serverObj,
+					thisObj->m_streamedCallSite.sessionObj,
+					"PCC_Deploy",
+					"Logout",
+					ptrInParams,
+					ptrInParamsLen,
+					&replyData,
+					&replyLen
+					);
+		if(TCPS_OK == errTcps)
+		{
+			ptrInParams += ptrInParamsLen;
+			ptrInParamsLen = 0;
+		}
+		ASSERT(outfiter);
+		iscm_RPCReplyPrefix* replyPrefix = (iscm_RPCReplyPrefix*)tcps_Alloc(sizeof(iscm_RPCReplyPrefix));
+		replyPrefix->Init();
+		outfiter->Push(replyPrefix, sizeof(*replyPrefix), true, NULL);
+		if(replyLen > 0)
+			outfiter->Push(replyData, replyLen, true, NULL);
+		return errTcps;
+	}
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::Logout() method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->Logout(
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::Logout(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::Logout(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_CreateTrunk(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	if(thisObj && thisObj->m_streamedCallSite.func)
+	{
+		void* replyData = NULL;
+		INT_PTR replyLen = 0;
+		errTcps = thisObj->m_streamedCallSite.func(
+					thisObj->m_streamedCallSite.serverObj,
+					thisObj->m_streamedCallSite.sessionObj,
+					"PCC_Deploy",
+					"CreateTrunk",
+					ptrInParams,
+					ptrInParamsLen,
+					&replyData,
+					&replyLen
+					);
+		if(TCPS_OK == errTcps)
+		{
+			ptrInParams += ptrInParamsLen;
+			ptrInParamsLen = 0;
+		}
+		ASSERT(outfiter);
+		iscm_RPCReplyPrefix* replyPrefix = (iscm_RPCReplyPrefix*)tcps_Alloc(sizeof(iscm_RPCReplyPrefix));
+		replyPrefix->Init();
+		outfiter->Push(replyPrefix, sizeof(*replyPrefix), true, NULL);
+		if(replyLen > 0)
+			outfiter->Push(replyData, replyLen, true, NULL);
+		return errTcps;
+	}
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN tcps_String trunk
+	IN tcps_String trunk_wrap;
+	GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, trunk_wrap);
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::CreateTrunk() method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->CreateTrunk(
+			trunk_wrap
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::CreateTrunk(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::CreateTrunk(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_RemoveTrunk(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	if(thisObj && thisObj->m_streamedCallSite.func)
+	{
+		void* replyData = NULL;
+		INT_PTR replyLen = 0;
+		errTcps = thisObj->m_streamedCallSite.func(
+					thisObj->m_streamedCallSite.serverObj,
+					thisObj->m_streamedCallSite.sessionObj,
+					"PCC_Deploy",
+					"RemoveTrunk",
+					ptrInParams,
+					ptrInParamsLen,
+					&replyData,
+					&replyLen
+					);
+		if(TCPS_OK == errTcps)
+		{
+			ptrInParams += ptrInParamsLen;
+			ptrInParamsLen = 0;
+		}
+		ASSERT(outfiter);
+		iscm_RPCReplyPrefix* replyPrefix = (iscm_RPCReplyPrefix*)tcps_Alloc(sizeof(iscm_RPCReplyPrefix));
+		replyPrefix->Init();
+		outfiter->Push(replyPrefix, sizeof(*replyPrefix), true, NULL);
+		if(replyLen > 0)
+			outfiter->Push(replyData, replyLen, true, NULL);
+		return errTcps;
+	}
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN tcps_String trunk
+	IN tcps_String trunk_wrap;
+	GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, trunk_wrap);
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::RemoveTrunk() method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->RemoveTrunk(
+			trunk_wrap
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::RemoveTrunk(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::RemoveTrunk(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_ListTrunk(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	if(thisObj && thisObj->m_streamedCallSite.func)
+	{
+		void* replyData = NULL;
+		INT_PTR replyLen = 0;
+		errTcps = thisObj->m_streamedCallSite.func(
+					thisObj->m_streamedCallSite.serverObj,
+					thisObj->m_streamedCallSite.sessionObj,
+					"PCC_Deploy",
+					"ListTrunk",
+					ptrInParams,
+					ptrInParamsLen,
+					&replyData,
+					&replyLen
+					);
+		if(TCPS_OK == errTcps)
+		{
+			ptrInParams += ptrInParamsLen;
+			ptrInParamsLen = 0;
+		}
+		ASSERT(outfiter);
+		iscm_RPCReplyPrefix* replyPrefix = (iscm_RPCReplyPrefix*)tcps_Alloc(sizeof(iscm_RPCReplyPrefix));
+		replyPrefix->Init();
+		outfiter->Push(replyPrefix, sizeof(*replyPrefix), true, NULL);
+		if(replyLen > 0)
+			outfiter->Push(replyData, replyLen, true, NULL);
+		return errTcps;
+	}
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::ListTrunk() method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OUT tcps_Array<tcps_String> trunks;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->ListTrunk(
+			opWrapper->trunks
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::ListTrunk(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::ListTrunk(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	// OUT tcps_Array<tcps_String> trunks
+	OUT const tcps_Array<tcps_String>& trunks_wrap = opWrapper->trunks;
+	Set_BaseType_(outfiter, trunks_wrap.LenRef());
+	for(int idx1=0; idx1<trunks_wrap.Length(); ++idx1)
+	{
+		const tcps_String& ref1 = trunks_wrap[idx1];
+		Set_String_(outfiter, ref1);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_AddAuthCenter(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	if(thisObj && thisObj->m_streamedCallSite.func)
+	{
+		void* replyData = NULL;
+		INT_PTR replyLen = 0;
+		errTcps = thisObj->m_streamedCallSite.func(
+					thisObj->m_streamedCallSite.serverObj,
+					thisObj->m_streamedCallSite.sessionObj,
+					"PCC_Deploy",
+					"AddAuthCenter",
+					ptrInParams,
+					ptrInParamsLen,
+					&replyData,
+					&replyLen
+					);
+		if(TCPS_OK == errTcps)
+		{
+			ptrInParams += ptrInParamsLen;
+			ptrInParamsLen = 0;
+		}
+		ASSERT(outfiter);
+		iscm_RPCReplyPrefix* replyPrefix = (iscm_RPCReplyPrefix*)tcps_Alloc(sizeof(iscm_RPCReplyPrefix));
+		replyPrefix->Init();
+		outfiter->Push(replyPrefix, sizeof(*replyPrefix), true, NULL);
+		if(replyLen > 0)
+			outfiter->Push(replyData, replyLen, true, NULL);
+		return errTcps;
+	}
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN tcps_String trunk
+	IN tcps_String trunk_wrap;
+	GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, trunk_wrap);
+
+	// IN PCC_ModuleTag authTag
+	IN PCC_ModuleTag authTag_wrap;
+		GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, authTag_wrap.name);
+		GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, authTag_wrap.version);
+
+	// IN tcps_Array<PCC_ModuleFile> files
+	IN tcps_Array<PCC_ModuleFile> files_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, array_len);
+	files_wrap.Resize(array_len);
+	for(int idx1=0; idx1<files_wrap.Length(); ++idx1)
+	{
+		PCC_ModuleFile& ref1 = files_wrap[idx1];
+			GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, ref1.name);
+			GET_BINARY_EX_(thisObj, ptrInParams, ptrInParamsLen, ref1.data);
+			GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, ref1.entry);
+	}
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::AddAuthCenter() method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->AddAuthCenter(
+			trunk_wrap,
+			authTag_wrap,
+			files_wrap
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::AddAuthCenter(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::AddAuthCenter(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_RemoveAuthCenter(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	if(thisObj && thisObj->m_streamedCallSite.func)
+	{
+		void* replyData = NULL;
+		INT_PTR replyLen = 0;
+		errTcps = thisObj->m_streamedCallSite.func(
+					thisObj->m_streamedCallSite.serverObj,
+					thisObj->m_streamedCallSite.sessionObj,
+					"PCC_Deploy",
+					"RemoveAuthCenter",
+					ptrInParams,
+					ptrInParamsLen,
+					&replyData,
+					&replyLen
+					);
+		if(TCPS_OK == errTcps)
+		{
+			ptrInParams += ptrInParamsLen;
+			ptrInParamsLen = 0;
+		}
+		ASSERT(outfiter);
+		iscm_RPCReplyPrefix* replyPrefix = (iscm_RPCReplyPrefix*)tcps_Alloc(sizeof(iscm_RPCReplyPrefix));
+		replyPrefix->Init();
+		outfiter->Push(replyPrefix, sizeof(*replyPrefix), true, NULL);
+		if(replyLen > 0)
+			outfiter->Push(replyData, replyLen, true, NULL);
+		return errTcps;
+	}
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN tcps_String trunk
+	IN tcps_String trunk_wrap;
+	GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, trunk_wrap);
+
+	// IN PCC_ModuleTag authTag
+	IN PCC_ModuleTag authTag_wrap;
+		GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, authTag_wrap.name);
+		GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, authTag_wrap.version);
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::RemoveAuthCenter() method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->RemoveAuthCenter(
+			trunk_wrap,
+			authTag_wrap
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::RemoveAuthCenter(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::RemoveAuthCenter(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_ListAuthCenter(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	if(thisObj && thisObj->m_streamedCallSite.func)
+	{
+		void* replyData = NULL;
+		INT_PTR replyLen = 0;
+		errTcps = thisObj->m_streamedCallSite.func(
+					thisObj->m_streamedCallSite.serverObj,
+					thisObj->m_streamedCallSite.sessionObj,
+					"PCC_Deploy",
+					"ListAuthCenter",
+					ptrInParams,
+					ptrInParamsLen,
+					&replyData,
+					&replyLen
+					);
+		if(TCPS_OK == errTcps)
+		{
+			ptrInParams += ptrInParamsLen;
+			ptrInParamsLen = 0;
+		}
+		ASSERT(outfiter);
+		iscm_RPCReplyPrefix* replyPrefix = (iscm_RPCReplyPrefix*)tcps_Alloc(sizeof(iscm_RPCReplyPrefix));
+		replyPrefix->Init();
+		outfiter->Push(replyPrefix, sizeof(*replyPrefix), true, NULL);
+		if(replyLen > 0)
+			outfiter->Push(replyData, replyLen, true, NULL);
+		return errTcps;
+	}
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN tcps_String trunk
+	IN tcps_String trunk_wrap;
+	GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, trunk_wrap);
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::ListAuthCenter() method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OUT tcps_Array<PCC_ModuleTag> authTags;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->ListAuthCenter(
+			trunk_wrap,
+			opWrapper->authTags
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::ListAuthCenter(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::ListAuthCenter(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	// OUT tcps_Array<PCC_ModuleTag> authTags
+	OUT const tcps_Array<PCC_ModuleTag>& authTags_wrap = opWrapper->authTags;
+	Set_BaseType_(outfiter, authTags_wrap.LenRef());
+	for(int idx1=0; idx1<authTags_wrap.Length(); ++idx1)
+	{
+		const PCC_ModuleTag& ref1 = authTags_wrap[idx1];
+			Set_String_(outfiter, ref1.name);
+			Set_BaseType_(outfiter, ref1.version);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_FindAuthCenter(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	if(thisObj && thisObj->m_streamedCallSite.func)
+	{
+		void* replyData = NULL;
+		INT_PTR replyLen = 0;
+		errTcps = thisObj->m_streamedCallSite.func(
+					thisObj->m_streamedCallSite.serverObj,
+					thisObj->m_streamedCallSite.sessionObj,
+					"PCC_Deploy",
+					"FindAuthCenter",
+					ptrInParams,
+					ptrInParamsLen,
+					&replyData,
+					&replyLen
+					);
+		if(TCPS_OK == errTcps)
+		{
+			ptrInParams += ptrInParamsLen;
+			ptrInParamsLen = 0;
+		}
+		ASSERT(outfiter);
+		iscm_RPCReplyPrefix* replyPrefix = (iscm_RPCReplyPrefix*)tcps_Alloc(sizeof(iscm_RPCReplyPrefix));
+		replyPrefix->Init();
+		outfiter->Push(replyPrefix, sizeof(*replyPrefix), true, NULL);
+		if(replyLen > 0)
+			outfiter->Push(replyData, replyLen, true, NULL);
+		return errTcps;
+	}
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN tcps_String trunk
+	IN tcps_String trunk_wrap;
+	GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, trunk_wrap);
+
+	// IN PCC_ModuleTag authTag
+	IN PCC_ModuleTag authTag_wrap;
+		GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, authTag_wrap.name);
+		GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, authTag_wrap.version);
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::FindAuthCenter() method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->FindAuthCenter(
+			trunk_wrap,
+			authTag_wrap
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::FindAuthCenter(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::FindAuthCenter(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_AddModule(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	if(thisObj && thisObj->m_streamedCallSite.func)
+	{
+		void* replyData = NULL;
+		INT_PTR replyLen = 0;
+		errTcps = thisObj->m_streamedCallSite.func(
+					thisObj->m_streamedCallSite.serverObj,
+					thisObj->m_streamedCallSite.sessionObj,
+					"PCC_Deploy",
+					"AddModule",
+					ptrInParams,
+					ptrInParamsLen,
+					&replyData,
+					&replyLen
+					);
+		if(TCPS_OK == errTcps)
+		{
+			ptrInParams += ptrInParamsLen;
+			ptrInParamsLen = 0;
+		}
+		ASSERT(outfiter);
+		iscm_RPCReplyPrefix* replyPrefix = (iscm_RPCReplyPrefix*)tcps_Alloc(sizeof(iscm_RPCReplyPrefix));
+		replyPrefix->Init();
+		outfiter->Push(replyPrefix, sizeof(*replyPrefix), true, NULL);
+		if(replyLen > 0)
+			outfiter->Push(replyData, replyLen, true, NULL);
+		return errTcps;
+	}
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN tcps_String trunk
+	IN tcps_String trunk_wrap;
+	GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, trunk_wrap);
+
+	// IN PCC_ModuleProperty moduleProperty
+	IN PCC_ModuleProperty moduleProperty_wrap;
+			GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, moduleProperty_wrap.moduleTag.name);
+			GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, moduleProperty_wrap.moduleTag.version);
+		GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, moduleProperty_wrap.modulePattern);
+		GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, moduleProperty_wrap.moduleFileType);
+		GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, moduleProperty_wrap.moduleType);
+		GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, moduleProperty_wrap.moduleLatency);
+		GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, moduleProperty_wrap.description);
+		GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, moduleProperty_wrap.modulePlatform);
+		GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, moduleProperty_wrap.addTime);
+		GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, moduleProperty_wrap.moduleSize);
+
+	// IN tcps_Array<PCC_ModuleFile> moudleFiles
+	IN tcps_Array<PCC_ModuleFile> moudleFiles_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, array_len);
+	moudleFiles_wrap.Resize(array_len);
+	for(int idx1=0; idx1<moudleFiles_wrap.Length(); ++idx1)
+	{
+		PCC_ModuleFile& ref1 = moudleFiles_wrap[idx1];
+			GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, ref1.name);
+			GET_BINARY_EX_(thisObj, ptrInParams, ptrInParamsLen, ref1.data);
+			GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, ref1.entry);
+	}
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::AddModule() method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OUT INT64 moduleKey;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->AddModule(
+			trunk_wrap,
+			moduleProperty_wrap,
+			moudleFiles_wrap,
+			opWrapper->moduleKey
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::AddModule(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::AddModule(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	// OUT INT64 moduleKey
+	OUT const INT64& moduleKey_wrap = opWrapper->moduleKey;
+	Set_BaseType_(outfiter, moduleKey_wrap);
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_AddModuleFile(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	if(thisObj && thisObj->m_streamedCallSite.func)
+	{
+		void* replyData = NULL;
+		INT_PTR replyLen = 0;
+		errTcps = thisObj->m_streamedCallSite.func(
+					thisObj->m_streamedCallSite.serverObj,
+					thisObj->m_streamedCallSite.sessionObj,
+					"PCC_Deploy",
+					"AddModuleFile",
+					ptrInParams,
+					ptrInParamsLen,
+					&replyData,
+					&replyLen
+					);
+		if(TCPS_OK == errTcps)
+		{
+			ptrInParams += ptrInParamsLen;
+			ptrInParamsLen = 0;
+		}
+		ASSERT(outfiter);
+		iscm_RPCReplyPrefix* replyPrefix = (iscm_RPCReplyPrefix*)tcps_Alloc(sizeof(iscm_RPCReplyPrefix));
+		replyPrefix->Init();
+		outfiter->Push(replyPrefix, sizeof(*replyPrefix), true, NULL);
+		if(replyLen > 0)
+			outfiter->Push(replyData, replyLen, true, NULL);
+		return errTcps;
+	}
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN tcps_String trunk
+	IN tcps_String trunk_wrap;
+	GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, trunk_wrap);
+
+	// IN INT64 moduleKey
+	IN INT64 moduleKey_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, moduleKey_wrap);
+
+	// IN PCC_ModuleFileType fileType
+	IN PCC_ModuleFileType fileType_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, fileType_wrap);
+
+	// IN tcps_Array<PCC_ModuleFile> moduleFiles
+	IN tcps_Array<PCC_ModuleFile> moduleFiles_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, array_len);
+	moduleFiles_wrap.Resize(array_len);
+	for(int idx1=0; idx1<moduleFiles_wrap.Length(); ++idx1)
+	{
+		PCC_ModuleFile& ref1 = moduleFiles_wrap[idx1];
+			GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, ref1.name);
+			GET_BINARY_EX_(thisObj, ptrInParams, ptrInParamsLen, ref1.data);
+			GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, ref1.entry);
+	}
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::AddModuleFile() method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->AddModuleFile(
+			trunk_wrap,
+			moduleKey_wrap,
+			fileType_wrap,
+			moduleFiles_wrap
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::AddModuleFile(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::AddModuleFile(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_RemoveModule(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	if(thisObj && thisObj->m_streamedCallSite.func)
+	{
+		void* replyData = NULL;
+		INT_PTR replyLen = 0;
+		errTcps = thisObj->m_streamedCallSite.func(
+					thisObj->m_streamedCallSite.serverObj,
+					thisObj->m_streamedCallSite.sessionObj,
+					"PCC_Deploy",
+					"RemoveModule",
+					ptrInParams,
+					ptrInParamsLen,
+					&replyData,
+					&replyLen
+					);
+		if(TCPS_OK == errTcps)
+		{
+			ptrInParams += ptrInParamsLen;
+			ptrInParamsLen = 0;
+		}
+		ASSERT(outfiter);
+		iscm_RPCReplyPrefix* replyPrefix = (iscm_RPCReplyPrefix*)tcps_Alloc(sizeof(iscm_RPCReplyPrefix));
+		replyPrefix->Init();
+		outfiter->Push(replyPrefix, sizeof(*replyPrefix), true, NULL);
+		if(replyLen > 0)
+			outfiter->Push(replyData, replyLen, true, NULL);
+		return errTcps;
+	}
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN tcps_String trunk
+	IN tcps_String trunk_wrap;
+	GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, trunk_wrap);
+
+	// IN INT64 moduleKey
+	IN INT64 moduleKey_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, moduleKey_wrap);
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::RemoveModule() method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->RemoveModule(
+			trunk_wrap,
+			moduleKey_wrap
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::RemoveModule(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::RemoveModule(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_RemoveModuleFiles(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	if(thisObj && thisObj->m_streamedCallSite.func)
+	{
+		void* replyData = NULL;
+		INT_PTR replyLen = 0;
+		errTcps = thisObj->m_streamedCallSite.func(
+					thisObj->m_streamedCallSite.serverObj,
+					thisObj->m_streamedCallSite.sessionObj,
+					"PCC_Deploy",
+					"RemoveModuleFiles",
+					ptrInParams,
+					ptrInParamsLen,
+					&replyData,
+					&replyLen
+					);
+		if(TCPS_OK == errTcps)
+		{
+			ptrInParams += ptrInParamsLen;
+			ptrInParamsLen = 0;
+		}
+		ASSERT(outfiter);
+		iscm_RPCReplyPrefix* replyPrefix = (iscm_RPCReplyPrefix*)tcps_Alloc(sizeof(iscm_RPCReplyPrefix));
+		replyPrefix->Init();
+		outfiter->Push(replyPrefix, sizeof(*replyPrefix), true, NULL);
+		if(replyLen > 0)
+			outfiter->Push(replyData, replyLen, true, NULL);
+		return errTcps;
+	}
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN tcps_String trunk
+	IN tcps_String trunk_wrap;
+	GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, trunk_wrap);
+
+	// IN INT64 moduleKey
+	IN INT64 moduleKey_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, moduleKey_wrap);
+
+	// IN INT32 fileType
+	IN INT32 fileType_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, fileType_wrap);
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::RemoveModuleFiles() method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->RemoveModuleFiles(
+			trunk_wrap,
+			moduleKey_wrap,
+			fileType_wrap
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::RemoveModuleFiles(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::RemoveModuleFiles(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_ListModules(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	if(thisObj && thisObj->m_streamedCallSite.func)
+	{
+		void* replyData = NULL;
+		INT_PTR replyLen = 0;
+		errTcps = thisObj->m_streamedCallSite.func(
+					thisObj->m_streamedCallSite.serverObj,
+					thisObj->m_streamedCallSite.sessionObj,
+					"PCC_Deploy",
+					"ListModules",
+					ptrInParams,
+					ptrInParamsLen,
+					&replyData,
+					&replyLen
+					);
+		if(TCPS_OK == errTcps)
+		{
+			ptrInParams += ptrInParamsLen;
+			ptrInParamsLen = 0;
+		}
+		ASSERT(outfiter);
+		iscm_RPCReplyPrefix* replyPrefix = (iscm_RPCReplyPrefix*)tcps_Alloc(sizeof(iscm_RPCReplyPrefix));
+		replyPrefix->Init();
+		outfiter->Push(replyPrefix, sizeof(*replyPrefix), true, NULL);
+		if(replyLen > 0)
+			outfiter->Push(replyData, replyLen, true, NULL);
+		return errTcps;
+	}
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN tcps_String trunk
+	IN tcps_String trunk_wrap;
+	GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, trunk_wrap);
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::ListModules() method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OUT tcps_Array<PCC_ModulePropWithKey> modulesInfo;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->ListModules(
+			trunk_wrap,
+			opWrapper->modulesInfo
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::ListModules(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::ListModules(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	// OUT tcps_Array<PCC_ModulePropWithKey> modulesInfo
+	OUT const tcps_Array<PCC_ModulePropWithKey>& modulesInfo_wrap = opWrapper->modulesInfo;
+	Set_BaseType_(outfiter, modulesInfo_wrap.LenRef());
+	for(int idx1=0; idx1<modulesInfo_wrap.Length(); ++idx1)
+	{
+		const PCC_ModulePropWithKey& ref1 = modulesInfo_wrap[idx1];
+			Set_BaseType_(outfiter, ref1.key);
+					Set_String_(outfiter, ref1.prop.moduleTag.name);
+					Set_BaseType_(outfiter, ref1.prop.moduleTag.version);
+				Set_BaseType_(outfiter, ref1.prop.modulePattern);
+				Set_BaseType_(outfiter, ref1.prop.moduleFileType);
+				Set_BaseType_(outfiter, ref1.prop.moduleType);
+				Set_BaseType_(outfiter, ref1.prop.moduleLatency);
+				Set_String_(outfiter, ref1.prop.description);
+				Set_BaseType_(outfiter, ref1.prop.modulePlatform);
+				Set_BaseType_(outfiter, ref1.prop.addTime);
+				Set_BaseType_(outfiter, ref1.prop.moduleSize);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_SetTimeout_(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) posting_method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN INT32 recvTimeout
+	IN INT32 recvTimeout_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, recvTimeout_wrap);
+
+	// IN INT32 sendTimeout
+	IN INT32 sendTimeout_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, sendTimeout_wrap);
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::SetTimeout_() posting_method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->SetTimeout_(
+			recvTimeout_wrap,
+			sendTimeout_wrap
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::SetTimeout_(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::SetTimeout_(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_SetSessionBufferSize_(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) posting_method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN INT32 recvBufBytes
+	IN INT32 recvBufBytes_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, recvBufBytes_wrap);
+
+	// IN INT32 sendBufBytes
+	IN INT32 sendBufBytes_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, sendBufBytes_wrap);
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::SetSessionBufferSize_() posting_method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->SetSessionBufferSize_(
+			recvBufBytes_wrap,
+			sendBufBytes_wrap
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::SetSessionBufferSize_(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::SetSessionBufferSize_(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError NP_SCATTEREDSession::Wrap_PCC_Deploy_MethodCheck_(
+				IN NP_SCATTEREDSession* thisObj,
+				IN void* faceObj,
+				IN iscm_PeerCallFlags peerCallFlags,
+				IN OUT const BYTE*& ptrInParams,
+				IN OUT INT_PTR& ptrInParamsLen,
+				OUT iscm_IRPCOutfiter* outfiter
+				) method
+{
+	ASSERT((NULL==thisObj) != (NULL==faceObj));
+	(void)ptrInParams; (void)ptrInParamsLen; (void)outfiter; // avoid warning.
+	TCPSError errTcps = TCPS_ERROR;
+
+	// 从ptrInParams中分析出输入参数
+	INT32 array_len;
+	(void)array_len; // avoid warning.
+	(void)peerCallFlags;
+
+	// IN tcps_Array<tcps_String> methods
+	IN tcps_Array<tcps_String> methods_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, array_len);
+	methods_wrap.Resize(array_len);
+	for(int idx1=0; idx1<methods_wrap.Length(); ++idx1)
+	{
+		tcps_String& ref1 = methods_wrap[idx1];
+		GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, ref1);
+	}
+
+	// IN tcps_Array<tcps_String> methodTypeInfos
+	IN tcps_Array<tcps_String> methodTypeInfos_wrap;
+	GET_BASETYPE_EX_(thisObj, ptrInParams, ptrInParamsLen, array_len);
+	methodTypeInfos_wrap.Resize(array_len);
+	for(int idx1=0; idx1<methodTypeInfos_wrap.Length(); ++idx1)
+	{
+		tcps_String& ref1 = methodTypeInfos_wrap[idx1];
+		GET_STRING_EX_(thisObj, ptrInParams, ptrInParamsLen, ref1);
+	}
+
+	if(0 != ptrInParamsLen)
+	{
+		NPLogError(("PCC_Deploy_S::MethodCheck_() method, Malformed request"));
+		if(thisObj)
+			thisObj->OnNetworkMalformed_();
+		return TCPS_ERR_MALFORMED_REQ;
+	}
+
+	// 定义输出参数
+	struct OutParamWrapSite
+	{
+		iscm_RPCReplyPrefix replyPrefix_iscm;
+		OUT tcps_Array<BOOL> matchingFlags;
+		OutParamWrapSite() { replyPrefix_iscm.Init(); }
+		~OutParamWrapSite() { }
+		static void FreeAction(void* p)
+		{
+			OutParamWrapSite* ptr = (OutParamWrapSite*)((BYTE*)p - offset_of(OutParamWrapSite, replyPrefix_iscm));
+			ptr->~OutParamWrapSite();
+			tcps_Free(ptr);
+		}
+	};
+	OutParamWrapSite* opWrapper = NULL;
+	if(outfiter) // 非posting call
+		opWrapper = tcps_New(OutParamWrapSite);
+	else
+		ASSERT(true); // posting call
+
+	// 调用用户实现的方法函数
+	try
+	{
+		PCC_Deploy_S* pCC_DeployObj_wrap;
+		if(thisObj)
+			pCC_DeployObj_wrap = thisObj->m_pCC_Deploy;
+		else
+			pCC_DeployObj_wrap = (PCC_Deploy_S*)faceObj;
+		ASSERT(pCC_DeployObj_wrap);
+		errTcps = pCC_DeployObj_wrap->MethodCheck_(
+			methods_wrap,
+			methodTypeInfos_wrap,
+			opWrapper->matchingFlags
+			);
+	}
+	catch(TCPSError ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = ret;
+	}
+	catch(int ret)
+	{
+		ASSERT(TCPS_OK != ret);
+		errTcps = (TCPSError)ret;
+	}
+	catch(std::bad_alloc)
+	{
+		NPLogError(("PCC_Deploy_S::MethodCheck_(), Out of memory"));
+		errTcps = TCPS_ERR_OUT_OF_MEMORY;
+	}
+	ISCM_BEGIN_CATCH_ALL_()
+		NPLogError(("PCC_Deploy_S::MethodCheck_(), Unknown exception"));
+		errTcps = TCPS_ERR_UNKNOWN_EXCEPTION;
+	ISCM_END_CATCH_ALL_()
+
+	if(TCPS_OK != errTcps)
+	{
+		if(opWrapper)
+			OutParamWrapSite::FreeAction(opWrapper);
+		return errTcps;
+	}
+
+	// 填充OUT数据到outfiter
+	if(opWrapper)
+	{
+		// FreeAction()负责对所有out数据在网络发送完成后进行析构清理工作
+		Set_BaseType_(outfiter, opWrapper->replyPrefix_iscm, OutParamWrapSite::FreeAction);
+	}
+
+	// OUT tcps_Array<BOOL> matchingFlags
+	OUT const tcps_Array<BOOL>& matchingFlags_wrap = opWrapper->matchingFlags;
+	Set_PODArray_(outfiter, matchingFlags_wrap);
+
+	return TCPS_OK;
+}
+
+PCC_Deploy_S::CallbackMatchingFlag::CallbackMatchingFlag()
+{
+	Reset();
+	cbmap_.insert(std::make_pair(CPtrStrA("SetRedirect_", 12), Info(&matching_SetRedirect_, true)));
+}
+
+void PCC_Deploy_S::CallbackMatchingFlag::Reset()
+{
+	matching_SetRedirect_ = false;
+}
+
+TCPSError PCC_Deploy_S::UpdateCallbackMatchingFlag_()
+{
+	if(!m_callbackMatchingUpdatedFlag.needUpdate)
+		return TCPS_OK;
+	InitializeAllCallsTypeInfo_();
+	tcps_String callbacks_ar[1];
+	IN tcps_Array<tcps_String> callbacks;
+	callbacks.Attach(xat_bind, callbacks_ar, 1);
+	tcps_String callbackTypeInfos_ar[1];
+	IN tcps_Array<tcps_String> callbackTypeInfos;
+	callbackTypeInfos.Attach(xat_bind, callbackTypeInfos_ar, 1);
+	callbacks_ar[0].Attach(xat_bind, (char*)CONST_STR_TO_PTR_LEN("SetRedirect_"));
+	callbackTypeInfos_ar[0].Attach(xat_bind, (char*)s_PCC_Deploy_SetRedirect__TypeInfo_, s_PCC_Deploy_SetRedirect__TypeInfo_len_);
+	OUT tcps_Array<BOOL> matchingFlags;
+	TCPSError err = this->CallbackCheck_(callbacks, callbackTypeInfos, matchingFlags);
+	if(TCPS_OK == err)
+	{
+		if(matchingFlags.Length() == callbacks.Length())
+		{
+			m_callbackMatchingUpdatedFlag.needUpdate = false;
+			const BOOL* const matchingFlags_p = matchingFlags.Get();
+			m_callbackMatchingFlag.matching_SetRedirect_ = matchingFlags_p[0];
+		}
+		else
+		{
+			ASSERT(false);
+			err = TCPS_ERR_MALFORMED_REPLY;
+		}
+	}
+	if(m_callbackMatchingUpdatedFlag.needUpdate)
+		m_callbackMatchingFlag.Reset();
+	return err;
+}
+
+const PCC_Deploy_S::CallbackMatchingFlag& PCC_Deploy_S::GetCallbackMatchingFlag(
+				OUT TCPSError* err /*= NULL*/
+				)
+{
+	TCPSError ret = UpdateCallbackMatchingFlag_();
+	if(err)
+		*err = ret;
+	return m_callbackMatchingFlag;
+}
+
+TCPSError PCC_Deploy_S::OnStreamedCall_L_(
+				IN const char* methodName,
+				IN INT_PTR nameLen /*= -1*/,
+				IN const void* data /*= NULL*/,
+				IN INT_PTR dataLen /*>= 0*/,
+				OUT LPVOID* replyData /*= NULL*/,
+				OUT INT_PTR* replyLen /*= NULL*/
+				)
+{
+	if(replyData)
+		*replyData = NULL;
+	if(replyLen)
+		*replyLen = 0;
+
+	INT_PTR inParamsDataLen = sizeof(iscm_PeerCallFlags);
+	inParamsDataLen += 12; // "PCC_Deploy::"
+	if(nameLen < 0)
+		nameLen = strlen(methodName);
+	inParamsDataLen += sizeof(INT32)+nameLen+1;
+	inParamsDataLen += dataLen;
+	BYTE* const inParamsData = (BYTE*)tcps_Alloc(inParamsDataLen);
+	if(NULL == inParamsData)
+		return TCPS_ERR_OUT_OF_MEMORY;
+
+	BYTE* p = inParamsData;
+	iscm_PeerCallFlags& peerCallFlags = *(iscm_PeerCallFlags*)p;
+	peerCallFlags.sizeofBOOL_req = sizeof(BOOL);
+	peerCallFlags.sizeofEnum_req = sizeof(DummyEnumType);
+	peerCallFlags.requireReply = 1; // ??
+	peerCallFlags.dummy_15 = 0;
+	p += sizeof(iscm_PeerCallFlags);
+	*(INT32*)p = 12+(INT32)nameLen;
+	p += sizeof(INT32);
+	strncpy((char*)p, "PCC_Deploy::", 12);
+	p += 12;
+	strncpy((char*)p, methodName, nameLen);
+	p += nameLen;
+	*(char*)p = 0;
+	p += 1;
+	memcpy(p, data, dataLen);
+	p += dataLen;
+	ASSERT(p-inParamsData == inParamsDataLen);
+
+	BOOL requireReplyData = true;
+	BOOL dataTransferred = false;
+	iscm_RPCDataOutfiter outfiter;
+	ASSERT(NULL==m_sessionR && m_sessionL);
+	TCPSError err = NP_SCATTEREDSession::OnRPCCall_(NULL, this, requireReplyData, inParamsData, dataTransferred, inParamsDataLen, &outfiter);
+	tcps_Free(inParamsData);
+	if(TCPS_OK != err)
+		return err;
+	// outfiter.swbBufs_[0]总指向iscm_RPCDataOutfiter::reply_
+	// outfiter.swbBufs_[1]为iscm_RPCReplyPrefix replyPrefix
+	ASSERT(outfiter.swbBufs_.size()==1 || outfiter.swbBufs_.size()>=2);
+	if(outfiter.swbBufs_.size() >= 2)
+	{
+		ASSERT(replyData && replyLen);
+		*replyLen = SockTotalizeWriteBufVec(outfiter.swbBufs_.Get()+2, outfiter.swbBufs_.size()-2);
+		*replyData = tcps_Alloc(*replyLen);
+		BYTE* q = (BYTE*)*replyData;
+		for(INT_PTR i=2; i<(INT_PTR)outfiter.swbBufs_.size(); ++i)
+		{
+			const SockWriteBuf& swb = outfiter.swbBufs_[i];
+			memcpy(q, swb.data, swb.len);
+			q += swb.len;
+		}
+		ASSERT(q-(BYTE*)*replyData == *replyLen);
+	}
+	return err;
+}
+
+TCPSError PCC_Deploy_S::StreamedCallback_(
+				IN const char* callbackName,
+				IN INT_PTR nameLen /*= -1*/,
+				IN const void* data /*= NULL*/,
+				IN INT_PTR dataLen /*>= 0*/,
+				OUT LPVOID* replyData /*= NULL*/,
+				OUT INT_PTR* replyLen /*= NULL*/
+				)
+{
+	if(replyData)
+		*replyData = NULL;
+	if(replyLen)
+		*replyLen = 0;
+	if(NULL==callbackName || 0==nameLen)
+	{
+		ASSERT(false);
+		return TCPS_ERR_INVALID_PARAM;
+	}
+	if(nameLen < 0)
+		nameLen = strlen(callbackName);
+
+	if(m_sessionL)
+	{
+		if(NULL == m_callSiteL.func_)
+		{
+			IscmRPCGlobalLocker locker;
+			if(NULL == m_callSiteL.func_)
+				m_callSiteL.func_ = tcps_New(CallSiteL_::TFunc);
+		}
+		PROC& callbackFuncL = m_callSiteL.func_->fnOnStreamedCallback_L_;
+		if(NULL == callbackFuncL)
+		{
+			InitializeAllCallsTypeInfo_();
+			callbackFuncL = m_sessionL->FindCallback_("OnStreamedCallback_L_", -1, NULL, 0);
+			if(NULL == callbackFuncL)
+				return TCPS_ERR_CALLBACK_NOT_MATCH;
+		}
+		return ((IPCC_Deploy_LocalCallback::FN_OnStreamedCallback_L_)callbackFuncL)(
+					m_sessionL,
+					callbackName,
+					nameLen,
+					data,
+					dataLen,
+					replyData,
+					replyLen
+					);
+	}
+	else if(m_sessionR)
+	{
+		iscm_IRequester* const m_rpcRequester = m_sessionR->m_callbackRequester.face_;
+		if(NULL==m_rpcRequester || !m_rpcRequester->IsConnected())
+			return TCPS_ERR_CALLBACK_NOT_READY;
+		DataOutfiter& m_dataOutfiter = m_sessionR->m_callbackOutfiter;
+		iscm_IRequester::AutoBeginCallEx locker(m_rpcRequester);
+		ASSERT(0 == m_dataOutfiter.bufs_.size());
+
+		TCPSError errUpdate = UpdateCallbackMatchingFlag_();
+		if(TCPS_OK != errUpdate)
+			return errUpdate;
+		CallbackMatchingFlag::CallbackMap::const_iterator itCallback = m_callbackMatchingFlag.cbmap_.find(callbackName, nameLen);
+		if(m_callbackMatchingFlag.cbmap_.end() == itCallback)
+			return TCPS_ERR_CALLBACK_NOT_MATCH;
+		ASSERT(itCallback->second.pMatchingVar);
+		if(!*(itCallback->second.pMatchingVar))
+			return TCPS_ERR_CALLBACK_NOT_MATCH;
+
+		DataOutfiter::AutoClear outfiter_AutoClear(m_dataOutfiter);
+
+		// 填充基本类型数据到outfiter
+		iscm_PeerCallFlags peerCallFlags;
+		peerCallFlags.sizeofBOOL_req = (INT8)sizeof(BOOL);
+		peerCallFlags.sizeofEnum_req = (INT8)sizeof(DummyEnumType);
+		peerCallFlags.requireReply = !(itCallback->second.isPosting);
+		peerCallFlags.dummy_15 = 0;
+		m_dataOutfiter.Push(&peerCallFlags, sizeof(peerCallFlags));
+
+		INT32 call_id_len = (INT32)(12+nameLen);
+		CSmartBuf<char, 256> call_id_buf(call_id_len+1);
+		strncpy(call_id_buf.Get(), "PCC_Deploy::", 12);
+		StrAssign(call_id_buf.Get()+12, callbackName, nameLen);
+		m_dataOutfiter.Push(&call_id_len, sizeof(INT32));
+		m_dataOutfiter.Push(call_id_buf.Get(), call_id_len+1);
+
+		// 填充IN参数到outfiter
+		if(dataLen > 0)
+			m_dataOutfiter.Push(data, dataLen);
+
+		// 调用PRCCall()
+		if(peerCallFlags.requireReply) // callback
+		{
+			const SockWriteBuf* reqBufVec = m_dataOutfiter.bufs_.Get();
+			int reqBufVecCount = (int)m_dataOutfiter.bufs_.size();
+			int replyBytes = 0;
+			TCPSError err = m_rpcRequester->CallEx(RPCCT_RPC, reqBufVec, reqBufVecCount, replyBytes);
+			if(TCPS_OK != err)
+				return err;
+
+			iscm_RPCReplyPrefix replyPrefix;
+			err = m_rpcRequester->RecvD(&replyPrefix, sizeof(replyPrefix));
+			if(TCPS_OK != err)
+			{
+				this->OnNetworkMalformed_();
+				return err;
+			}
+
+			INT_PTR leftReplyLen = replyBytes - sizeof(replyPrefix);
+			ASSERT(leftReplyLen >= 0);
+			if(leftReplyLen > 0)
+			{
+				ASSERT(replyData && replyLen);
+				tcps_Binary replied_data;
+				if(!replied_data.Resize(leftReplyLen))
+				{
+					this->OnNetworkMalformed_();
+					return err;
+				}
+				err = m_rpcRequester->RecvD(replied_data.Get(), (int)leftReplyLen);
+				if(TCPS_OK != err)
+				{
+					this->OnNetworkMalformed_();
+					return err;
+				}
+				if(NULL==replyData || NULL==replyLen)
+				{
+					ASSERT(false);
+					return TCPS_ERR_INVALID_PARAM;
+				}
+				INT32 bytes = 0;
+				*replyData = replied_data.Drop(&bytes);
+				*replyLen = bytes;
+			}
+		}
+		else // posting callback
+		{
+			const SockWriteBuf* reqBufVec = m_dataOutfiter.bufs_.Get();
+			int reqBufVecCount = (int)m_dataOutfiter.bufs_.size();
+			if(m_sessionR->m_udpSite.IsLinked())
+			{
+				int total = SockTotalizeWriteBufVec(reqBufVec, reqBufVecCount);
+				BYTE* p = (BYTE*)tcps_Alloc(total);
+				if(NULL == p)
+				{
+					ASSERT(false);
+					return TCPS_ERR_OUT_OF_MEMORY;
+				}
+				BYTE* q = p;
+				for(int i=0; i<reqBufVecCount; ++i)
+				{
+					const SockWriteBuf& swb = reqBufVec[i];
+					memcpy(q, swb.data, swb.len);
+					q += swb.len;
+				}
+				ASSERT((int)(q-p) == total);
+				SockWriteBuf swb_udp;
+				swb_udp.data = p;
+				swb_udp.len = total;
+				INT32 sessionID;
+				m_rpcRequester->GetPeerSessionKey(sessionID);
+				iscm_IUDPServeMan& udpServer = iscm_FetchUDPServeMan();
+				udpServer.SendSessionData(sessionID, &swb_udp, 1);
+			}
+			else if(0 != m_sessionR->m_postingProxy.callerKey_)
+			{
+				INT_PTR queueFullIndexes = -1;
+				INT_PTR queueFullCount = 0;
+				TCPSError err = iscm_FetchPostingCallerMan().BatchPosting(&m_sessionR->m_postingProxy.callerKey_, 1, reqBufVec, reqBufVecCount, &queueFullIndexes, &queueFullCount);
+				if(TCPS_OK != err)
+					return err;
+				ASSERT(0==queueFullCount || 1==queueFullCount);
+				if(1 == queueFullCount)
+					return TCPS_ERR_POSTING_PENDING_FULL;
+			}
+			else
+			{
+				TCPSError err = m_rpcRequester->Post(RPCCT_RPC, reqBufVec, reqBufVecCount);
+				if(TCPS_OK != err)
+					return err;
+			}
+		}
+	}
+	else
+	{
+		ASSERT(false);
+		return TCPS_ERR_INTERNAL_BUG;
+	}
+
+	return TCPS_OK;
+}
+
+TCPSError PCC_Deploy_S::SetRedirect_(
+				IN const IPP& redirectIPP_wrap,
+				IN const void* redirectParam_wrap, IN INT32 redirectParam_wrap_len
+				) posting_callback
+{
+	if(m_sessionL)
+	{
+		// ASSERT(false); // ??
+		return TCPS_ERR_REFUSED;
+	}
+
+	// 准备回调相关变量
+	iscm_IRequester* const m_rpcRequester = m_sessionR->m_callbackRequester.face_;
+	if(NULL==m_rpcRequester || !m_rpcRequester->IsConnected())
+		return TCPS_ERR_CALLBACK_NOT_READY;
+	DataOutfiter& m_dataOutfiter = m_sessionR->m_callbackOutfiter;
+
+	iscm_IRequester::AutoBeginCallEx locker(m_rpcRequester);
+	ASSERT(0 == m_dataOutfiter.bufs_.size());
+
+	TCPSError errUpdate = UpdateCallbackMatchingFlag_();
+	if(TCPS_OK != errUpdate)
+		return errUpdate;
+	if(!m_callbackMatchingFlag.matching_SetRedirect_)
+		return TCPS_ERR_CALLBACK_NOT_MATCH;
+
+	DataOutfiter::AutoClear outfiter_AutoClear(m_dataOutfiter);
+
+	// 填充基本类型数据到outfiter
+	iscm_PeerCallFlags peerCallFlags;
+	peerCallFlags.sizeofBOOL_req = (INT8)sizeof(BOOL);
+	peerCallFlags.sizeofEnum_req = (INT8)sizeof(DummyEnumType);
+	peerCallFlags.requireReply = 0;
+	peerCallFlags.dummy_15 = 0;
+	m_dataOutfiter.Push(&peerCallFlags, sizeof(peerCallFlags));
+
+	INT32 call_id_len = 24;
+	m_dataOutfiter.Push(&call_id_len, sizeof(INT32));
+	m_dataOutfiter.Push("PCC_Deploy::SetRedirect_", call_id_len+1);
+
+	// 填充IN参数到outfiter
+
+	// IN IPP redirectIPP
+	Put_BaseType_(&m_dataOutfiter, redirectIPP_wrap);
+
+	// IN tcps_Binary redirectParam
+	if(redirectParam_wrap_len<0 || (redirectParam_wrap_len>0 && NULL==redirectParam_wrap))
+	{
+		ASSERT(false);
+		return TCPS_ERR_INVALID_PARAM;
+	}
+	Put_Binary_(&m_dataOutfiter, redirectParam_wrap, redirectParam_wrap_len);
+
+	// 调用RPCCall()
+	{
+		const SockWriteBuf* reqBufVec = m_dataOutfiter.bufs_.Get();
+		int reqBufVecCount = (int)m_dataOutfiter.bufs_.size();
+		TCPSError err = m_rpcRequester->Post(RPCCT_RPC, reqBufVec, reqBufVecCount);
+		if(TCPS_OK != err)
+			return err;
+	}
+	return TCPS_OK;
+}
+
+TCPSError PCC_Deploy_S::SetRedirect__Batch(
+				IN const PPCC_Deploy_S_* wrap_sessions,
+				IN INT_PTR wrap_sessionsCount,
+				IN const IPP& redirectIPP_wrap,
+				IN const void* redirectParam_wrap, IN INT32 redirectParam_wrap_len,
+				OUT PPCC_Deploy_S_* wrap_sendFaileds /*= NULL*/,
+				OUT INT_PTR* wrap_failedCount /*= NULL*/
+				) posting_callback
+{
+	if(wrap_failedCount)
+		*wrap_failedCount= 0;
+
+	if(NULL==wrap_sessions || wrap_sessionsCount<=0)
+	{
+		ASSERT(false);
+		return TCPS_ERR_INVALID_PARAM;
+	}
+	if((!!wrap_sendFaileds) != (!!wrap_failedCount))
+	{
+		ASSERT(false); // wrap_sendFaileds、wrap_failedCount要么都为NULL，要么都不为NULL
+		return TCPS_ERR_INVALID_PARAM;
+	}
+
+	INT_PTR notReadies = 0;
+	tcps_SmartArray<PPCC_Deploy_S_, 256> iscm_sessions_ar_;
+	for(INT_PTR i=0; i<wrap_sessionsCount; ++i)
+	{
+		if(NULL == wrap_sessions[i])
+		{
+			ASSERT_EX(false, tcps_GetErrTxt(TCPS_ERR_INVALID_PARAM));
+			continue;
+		}
+		if(wrap_sessions[i]->m_sessionL)
+			continue;
+		if(TCPS_OK != wrap_sessions[i]->UpdateCallbackMatchingFlag_())
+			continue;
+		if(!wrap_sessions[i]->m_callbackMatchingFlag.matching_SetRedirect_)
+		{
+			IPP peerIPP = wrap_sessions[i]->m_sessionR->m_peerIPP;
+			NPLogWarning(("The 'PCC_Deploy::SetRedirect_()' of '%s' is not matched!", IPP_TO_STR_A(peerIPP)));
+			continue;
+		}
+		if(0 == wrap_sessions[i]->m_sessionR->m_postingProxy.callerKey_)
+		{
+			if(wrap_sendFaileds)
+			{
+				wrap_sendFaileds[notReadies] = wrap_sessions[i];
+				++notReadies;
+			}
+			continue;
+		}
+		iscm_sessions_ar_.push_back(wrap_sessions[i]);
+	}
+	if(0 == iscm_sessions_ar_.size())
+		return TCPS_OK;
+
+	// 准备调用数据
+	tcps_SmartArray<SockWriteBuf, 256> iscm_swb_ar_;
+	SockWriteBuf iscm_swb_;
+
+	iscm_PeerCallFlags peerCallFlags;
+	peerCallFlags.sizeofBOOL_req = (INT8)sizeof(BOOL);
+	peerCallFlags.sizeofEnum_req = (INT8)sizeof(DummyEnumType);
+	peerCallFlags.requireReply = 0;
+	peerCallFlags.dummy_15 = 0;
+	iscm_swb_.data = &peerCallFlags;
+	iscm_swb_.len = sizeof(peerCallFlags);
+	iscm_swb_ar_.push_back(iscm_swb_);
+
+	INT32 call_id_len = 24;
+	iscm_swb_.data = &call_id_len;
+	iscm_swb_.len = sizeof(call_id_len);
+	iscm_swb_ar_.push_back(iscm_swb_);
+	iscm_swb_.data = "PCC_Deploy::SetRedirect_";
+	iscm_swb_.len = call_id_len+1;
+	iscm_swb_ar_.push_back(iscm_swb_);
+
+	// IN IPP redirectIPP
+	iscm_swb_.data = &redirectIPP_wrap;
+	iscm_swb_.len = sizeof(redirectIPP_wrap);
+	iscm_swb_ar_.push_back(iscm_swb_);
+
+	// IN tcps_Binary redirectParam
+	if(redirectParam_wrap_len<0 || (redirectParam_wrap_len>0 && NULL==redirectParam_wrap))
+	{
+		ASSERT(false);
+		return TCPS_ERR_INVALID_PARAM;
+	}
+	iscm_swb_.data = &redirectParam_wrap_len;
+	iscm_swb_.len = sizeof(redirectParam_wrap_len);
+	iscm_swb_ar_.push_back(iscm_swb_);
+	if(redirectParam_wrap_len > 0)
+	{
+		iscm_swb_.data = redirectParam_wrap;
+		iscm_swb_.len = redirectParam_wrap_len;
+		iscm_swb_ar_.push_back(iscm_swb_);
+	}
+
+	// 准备callerKeys
+	tcps_SmartArray<INT32, 256> iscm_callerKey_ar_;
+	iscm_callerKey_ar_.resize(iscm_sessions_ar_.size());
+	for(INT_PTR i=0; i<(INT_PTR)iscm_sessions_ar_.size(); ++i)
+		iscm_callerKey_ar_[i] = iscm_sessions_ar_[i]->m_sessionR->m_postingProxy.callerKey_;
+
+	iscm_IPostingCallerMan& callerMan = iscm_FetchPostingCallerMan();
+	if(NULL == wrap_sendFaileds)
+	{
+		return callerMan.BatchPosting(
+							iscm_callerKey_ar_.Get(),
+							iscm_callerKey_ar_.size(),
+							iscm_swb_ar_.Get(),
+							iscm_swb_ar_.size(),
+							NULL,
+							NULL
+							);
+	}
+
+	ASSERT(wrap_failedCount);
+	tcps_SmartArray<INT_PTR, 256> iscm_queueFullIndexesAr;
+	iscm_queueFullIndexesAr.resize(iscm_callerKey_ar_.size());
+	TCPSError err = callerMan.BatchPosting(
+						iscm_callerKey_ar_.Get(),
+						iscm_callerKey_ar_.size(),
+						iscm_swb_ar_.Get(),
+						iscm_swb_ar_.size(),
+						iscm_queueFullIndexesAr.Get(),
+						wrap_failedCount
+						);
+	ASSERT(0<=*wrap_failedCount && *wrap_failedCount<=(INT_PTR)iscm_queueFullIndexesAr.size());
+	for(INT_PTR i=0; i<*wrap_failedCount; ++i)
+		(wrap_sendFaileds+notReadies)[i] = iscm_sessions_ar_[iscm_queueFullIndexesAr[i]];
+	*wrap_failedCount += notReadies;
+	return err;
+}
+
+TCPSError PCC_Deploy_S::CallbackCheck_(
+				IN const tcps_Array<tcps_String>& callbacks_wrap,
+				IN const tcps_Array<tcps_String>& callbackTypeInfos_wrap,
+				OUT tcps_Array<BOOL>& matchingFlags_wrap
+				) callback
+{
+	if(m_sessionL)
+	{
+		InitializeAllCallsTypeInfo_();
+		ASSERT(callbacks_wrap.Length() == callbackTypeInfos_wrap.Length());
+		matchingFlags_wrap.Resize(callbacks_wrap.Length());
+		for(int i=0; i<callbacks_wrap.Length(); ++i)
+		{
+			const tcps_String& name = callbacks_wrap[i];
+			const tcps_String& typeInfo = callbackTypeInfos_wrap[i];
+			matchingFlags_wrap[i] = (NULL != m_sessionL->FindCallback_(name.Get(), name.Length(), typeInfo.Get(), typeInfo.Length()));
+		}
+		return TCPS_OK;
+	}
+
+	// 准备回调相关变量
+	iscm_IRequester* const m_rpcRequester = m_sessionR->m_callbackRequester.face_;
+	if(NULL==m_rpcRequester || !m_rpcRequester->IsConnected())
+		return TCPS_ERR_CALLBACK_NOT_READY;
+	DataOutfiter& m_dataOutfiter = m_sessionR->m_callbackOutfiter;
+
+	iscm_IRequester::AutoBeginCallEx locker(m_rpcRequester);
+	ASSERT(0 == m_dataOutfiter.bufs_.size());
+
+	DataOutfiter::AutoClear outfiter_AutoClear(m_dataOutfiter);
+
+	// 填充基本类型数据到outfiter
+	iscm_PeerCallFlags peerCallFlags;
+	peerCallFlags.sizeofBOOL_req = (INT8)sizeof(BOOL);
+	peerCallFlags.sizeofEnum_req = (INT8)sizeof(DummyEnumType);
+	peerCallFlags.requireReply = 1;
+	peerCallFlags.dummy_15 = 0;
+	m_dataOutfiter.Push(&peerCallFlags, sizeof(peerCallFlags));
+
+	INT32 call_id_len = 26;
+	m_dataOutfiter.Push(&call_id_len, sizeof(INT32));
+	m_dataOutfiter.Push("PCC_Deploy::CallbackCheck_", call_id_len+1);
+
+	// 填充IN参数到outfiter
+
+	// IN tcps_Array<tcps_String> callbacks
+	Put_BaseType_(&m_dataOutfiter, callbacks_wrap.LenRef());
+	for(int idx1=0; idx1<callbacks_wrap.Length(); ++idx1)
+	{
+		const tcps_String& ref1 = callbacks_wrap[idx1];
+		Put_String_(&m_dataOutfiter, ref1.Get(), ref1.LenRef());
+	}
+
+	// IN tcps_Array<tcps_String> callbackTypeInfos
+	Put_BaseType_(&m_dataOutfiter, callbackTypeInfos_wrap.LenRef());
+	for(int idx1=0; idx1<callbackTypeInfos_wrap.Length(); ++idx1)
+	{
+		const tcps_String& ref1 = callbackTypeInfos_wrap[idx1];
+		Put_String_(&m_dataOutfiter, ref1.Get(), ref1.LenRef());
+	}
+
+	// 调用RPCCall()
+	{
+		const SockWriteBuf* reqBufVec = m_dataOutfiter.bufs_.Get();
+		int reqBufVecCount = (int)m_dataOutfiter.bufs_.size();
+		int replyBytes = 0;
+		TCPSError err = m_rpcRequester->CallEx(RPCCT_RPC, reqBufVec, reqBufVecCount, replyBytes);
+		if(TCPS_OK != err)
+			return err;
+
+		iscm_IRequester* iscm_replied_picker = m_rpcRequester;
+
+		iscm_RPCReplyPrefix replyPrefix;
+		PICK_BASETYPE_(iscm_replied_picker, replyPrefix);
+		INT32 array_len;
+		(void)array_len; // avoid warning.
+
+		// OUT tcps_Array<BOOL> matchingFlags
+		PICK_PODARRAY_(iscm_replied_picker, matchingFlags_wrap);
+	}
+	return TCPS_OK;
+}
+
+TCPSError PCC_Deploy_S::SetTimeout_(
+			IN INT32 recvTimeout,
+			IN INT32 sendTimeout
+			) posting_method
+{
+	this->SetTimeout(INFINITE, recvTimeout, sendTimeout);
+	return TCPS_OK;
+}
+
+TCPSError PCC_Deploy_S::SetSessionBufferSize_(
+			IN INT32 recvBufBytes,
+			IN INT32 sendBufBytes
+			) posting_method
+{
+	this->SetSessionBufferSize(recvBufBytes, sendBufBytes);
+	return TCPS_OK;
+}
+
+TCPSError PCC_Deploy_S::MethodCheck_(
+			IN const tcps_Array<tcps_String>& methods,
+			IN const tcps_Array<tcps_String>& methodTypeInfos,
+			OUT tcps_Array<BOOL>& matchingFlags
+			) method
+{
+	if(0==methods.Length() || methods.Length()!=methodTypeInfos.Length())
+		return TCPS_ERR_INVALID_PARAM;
+
+	InitializeAllCallsTypeInfo_();
+	typedef CQuickStringMap<CPtrStrA, CPtrStrA, QSS_Traits<16> > MethodMap_;
+	static MethodMap_* s_mdMap = NULL;
+	if(NULL == s_mdMap)
+	{
+		IscmRPCGlobalLocker locker;
+		if(NULL == s_mdMap)
+		{
+			static MethodMap_ s_mdMapObj;
+			MethodMap_& mdMap = s_mdMapObj;
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("Login"), CPtrStrA(s_PCC_Deploy_Login_TypeInfo_, s_PCC_Deploy_Login_TypeInfo_len_))).second);
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("Logout"), CPtrStrA(s_PCC_Deploy_Logout_TypeInfo_, s_PCC_Deploy_Logout_TypeInfo_len_))).second);
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("CreateTrunk"), CPtrStrA(s_PCC_Deploy_CreateTrunk_TypeInfo_, s_PCC_Deploy_CreateTrunk_TypeInfo_len_))).second);
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("RemoveTrunk"), CPtrStrA(s_PCC_Deploy_RemoveTrunk_TypeInfo_, s_PCC_Deploy_RemoveTrunk_TypeInfo_len_))).second);
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("ListTrunk"), CPtrStrA(s_PCC_Deploy_ListTrunk_TypeInfo_, s_PCC_Deploy_ListTrunk_TypeInfo_len_))).second);
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("AddAuthCenter"), CPtrStrA(s_PCC_Deploy_AddAuthCenter_TypeInfo_, s_PCC_Deploy_AddAuthCenter_TypeInfo_len_))).second);
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("RemoveAuthCenter"), CPtrStrA(s_PCC_Deploy_RemoveAuthCenter_TypeInfo_, s_PCC_Deploy_RemoveAuthCenter_TypeInfo_len_))).second);
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("ListAuthCenter"), CPtrStrA(s_PCC_Deploy_ListAuthCenter_TypeInfo_, s_PCC_Deploy_ListAuthCenter_TypeInfo_len_))).second);
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("FindAuthCenter"), CPtrStrA(s_PCC_Deploy_FindAuthCenter_TypeInfo_, s_PCC_Deploy_FindAuthCenter_TypeInfo_len_))).second);
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("AddModule"), CPtrStrA(s_PCC_Deploy_AddModule_TypeInfo_, s_PCC_Deploy_AddModule_TypeInfo_len_))).second);
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("AddModuleFile"), CPtrStrA(s_PCC_Deploy_AddModuleFile_TypeInfo_, s_PCC_Deploy_AddModuleFile_TypeInfo_len_))).second);
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("RemoveModule"), CPtrStrA(s_PCC_Deploy_RemoveModule_TypeInfo_, s_PCC_Deploy_RemoveModule_TypeInfo_len_))).second);
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("RemoveModuleFiles"), CPtrStrA(s_PCC_Deploy_RemoveModuleFiles_TypeInfo_, s_PCC_Deploy_RemoveModuleFiles_TypeInfo_len_))).second);
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("ListModules"), CPtrStrA(s_PCC_Deploy_ListModules_TypeInfo_, s_PCC_Deploy_ListModules_TypeInfo_len_))).second);
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("SetTimeout_"), CPtrStrA(s_PCC_Deploy_SetTimeout__TypeInfo_, s_PCC_Deploy_SetTimeout__TypeInfo_len_))).second);
+			VERIFY(mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("SetSessionBufferSize_"), CPtrStrA(s_PCC_Deploy_SetSessionBufferSize__TypeInfo_, s_PCC_Deploy_SetSessionBufferSize__TypeInfo_len_))).second);
+			s_mdMap = &mdMap;
+		}
+	}
+
+	matchingFlags.Resize(methods.Length());
+	for(int index=0; index<methods.Length(); ++index)
+	{
+		BOOL& flag = matchingFlags[index];
+		const tcps_String& name = methods[index];
+		const tcps_String& typeInfos = methodTypeInfos[index];
+		MethodMap_::const_iterator cit = s_mdMap->find(name.Get(), name.Length());
+		if(cit!=s_mdMap->end() && 0==typeInfos.Compare(cit->second.p, cit->second.len))
+			flag = true;
+		else
+			flag = false;
+	}
+	return TCPS_OK;
+}
+
+void PCC_Deploy_S::CloseSession(
+				IN TCPSError cause /*= TCPS_OK*/
+				)
+{
+	ASSERT((NULL==m_sessionR) != (NULL==m_sessionL));
+	if(m_sessionR)
+		m_sessionR->CloseSession_(cause);
+	else if(m_sessionL)
+	{
+		AutoFlag<OSThreadID> autoClosingTID(m_closingTID_L.tid, OSThreadSelf());
+		m_sessionL->CloseSession_();
+	}
+}
+
+IPP PCC_Deploy_S::GetPeerIPP(
+				OUT IPP* peerID /*= NULL*/
+				) const
+{
+	ASSERT((NULL==m_sessionR) != (NULL==m_sessionL));
+	if(m_sessionR)
+	{
+		if(peerID)
+			*peerID = m_sessionR->m_peerID_IPP;
+		return m_sessionR->m_peerIPP;
+	}
+
+	if(m_sessionL)
+	{
+		if(peerID)
+			*peerID = IPP((DWORD)0, (int)0);
+		return IPP((DWORD)0, (int)0);
+	}
+
+	if(peerID)
+		*peerID = INVALID_IPP;
+	return INVALID_IPP;
+}
+
+BOOL PCC_Deploy_S::IsLocalPeer() const
+{
+	ASSERT((NULL==m_sessionR) != (NULL==m_sessionL));
+	return (NULL != m_sessionL);
+}
+
+void PCC_Deploy_S::SetPostingPendingParameters(
+				IN INT32 maxPendingBytes /*= -1*/,
+				IN INT32 maxPendings /*= -1*/
+				)
+{
+	ASSERT((NULL==m_sessionR) != (NULL==m_sessionL));
+	if(m_sessionR)
+		m_sessionR->m_postingPendingParam.Set(maxPendingBytes, maxPendings);
+}
+
+void PCC_Deploy_S::GetPostingPendingParameters(
+				OUT INT32* maxPendingBytes /*= NULL*/,
+				OUT INT32* maxPendings /*= NULL*/
+				) const
+{
+	ASSERT((NULL==m_sessionR) != (NULL==m_sessionL));
+	if(m_sessionL)
+	{
+		if(maxPendingBytes)
+			*maxPendingBytes = 0;
+		if(maxPendings)
+			*maxPendings = 0;
+		return;
+	}
+	m_sessionR->m_postingPendingParam.Get(maxPendingBytes, maxPendings);
+}
+
+BOOL PCC_Deploy_S::CallbackIsReady() const
+{
+	ASSERT((NULL==m_sessionR) != (NULL==m_sessionL));
+	if(m_sessionR)
+		return (m_sessionR->m_callbackRequester.face_ && m_sessionR->m_callbackRequester.face_->IsConnected());
+	return true;
+}
+
+TCPSError PCC_Deploy_S::SetTimeout(
+				IN DWORD connectTimeout /*= INFINITE*/,
+				IN DWORD recvTimeout /*= INFINITE*/,
+				IN DWORD sendTimeout /*= INFINITE*/
+				)
+{
+	ASSERT((NULL==m_sessionR) != (NULL==m_sessionL));
+	if(m_sessionL)
+		return TCPS_OK;
+	if(NULL == m_sessionR->m_callbackRequester.face_)
+		return TCPS_ERR_CALLBACK_NOT_READY;
+	m_sessionR->m_callbackRequester.face_->SetTimeout(connectTimeout, recvTimeout, sendTimeout);
+	return TCPS_OK;
+}
+
+TCPSError PCC_Deploy_S::GetTimeout(
+				OUT DWORD* connectTimeout /*= NULL*/,
+				OUT DWORD* recvTimeout /*= NULL*/,
+				OUT DWORD* sendTimeout /*= NULL*/
+				)
+{
+	ASSERT((NULL==m_sessionR) != (NULL==m_sessionL));
+	if(m_sessionL)
+	{
+		if(connectTimeout)
+			*connectTimeout = INFINITE;
+		if(recvTimeout)
+			*recvTimeout = INFINITE;
+		if(sendTimeout)
+			*sendTimeout = INFINITE;
+		return TCPS_OK;
+	}
+
+	if(NULL == m_sessionR->m_callbackRequester.face_)
+		return TCPS_ERR_CALLBACK_NOT_READY;
+	m_sessionR->m_callbackRequester.face_->GetTimeout(connectTimeout, recvTimeout, sendTimeout);
+	return TCPS_OK;
+}
+
+void PCC_Deploy_S::SetSessionBufferSize(
+				IN INT32 recvBufBytes /*= -1*/,
+				IN INT32 sendBufBytes /*= -1*/
+				)
+{
+	ASSERT((NULL==m_sessionR) != (NULL==m_sessionL));
+	if(m_sessionL)
+		return;
+
+	if(recvBufBytes>=0 || sendBufBytes>=0)
+	{
+		SOCKET sock = INVALID_SOCKET;
+		m_sessionR->m_bindedSession->GetInfos(NULL, &sock, NULL, NULL, NULL);
+		ASSERT(SockValid(sock));
+		if(recvBufBytes >= 0)
+			SockSetReceiveBufSize(sock, (0==recvBufBytes ? TCPS_DEFAULT_RECVBUF_SIZE : recvBufBytes));
+		if(sendBufBytes >= 0)
+			SockSetSendBufSize(sock, (0==sendBufBytes ? TCPS_DEFAULT_SENDBUF_SIZE : sendBufBytes));
+	}
+	if(m_sessionR->m_callbackRequester.face_)
+		m_sessionR->m_callbackRequester.face_->SetSessionBufferSize(recvBufBytes, sendBufBytes);
+}
+
+void PCC_Deploy_S::GetSessionBufferSize(
+				OUT INT32* recvBufBytes /*= NULL*/,
+				OUT INT32* sendBufBytes /*= NULL*/
+				) const
+{
+	ASSERT((NULL==m_sessionR) != (NULL==m_sessionL));
+	if(m_sessionL)
+	{
+		if(recvBufBytes)
+			*recvBufBytes = 0;
+		if(sendBufBytes)
+			*sendBufBytes = 0;
+		return;
+	}
+
+	if(NULL==recvBufBytes && NULL==sendBufBytes)
+		return;
+	if(m_sessionR->m_callbackRequester.face_)
+	{
+		m_sessionR->m_callbackRequester.face_->GetSessionBufferSize(recvBufBytes, sendBufBytes);
+	}
+	else
+	{
+		SOCKET sock = INVALID_SOCKET;
+		m_sessionR->m_bindedSession->GetInfos(NULL, &sock, NULL, NULL, NULL);
+		ASSERT(SockValid(sock));
+		if(recvBufBytes)
+			SockGetReceiveBufSize(sock, recvBufBytes);
+		if(sendBufBytes)
+			SockGetSendBufSize(sock, sendBufBytes);
+	}
+}
+
+void PCC_Deploy_S::SetPostingSendParameters(
+				IN INT32 maxBufferingSize,
+				IN INT32 maxSendings
+				)
+{
+	ASSERT((NULL==m_sessionR) != (NULL==m_sessionL));
+	if(m_sessionR && 0!=m_sessionR->m_postingProxy.callerKey_)
+		iscm_FetchPostingCallerMan().SetBufferingParam(m_sessionR->m_postingProxy.callerKey_, maxBufferingSize, maxSendings);
+	m_postingSendParam.Set(maxBufferingSize, maxSendings);
+}
+
+void PCC_Deploy_S::GetPostingSendParameters(
+				OUT INT32* maxBufferingSize /*= NULL*/,
+				OUT INT32* maxSendings /*= NULL*/
+				) const
+{
+	ASSERT((NULL==m_sessionR) != (NULL==m_sessionL));
+	if(m_sessionL)
+	{
+		if(maxBufferingSize)
+			*maxBufferingSize = 0;
+		if(maxSendings)
+			*maxSendings = 0;
+		return;
+	}
+	m_postingSendParam.Get(maxBufferingSize, maxSendings);
+}
+
+TCPSError PCC_Deploy_S::CleanPostingSendingQueue()
+{
+	ASSERT((NULL==m_sessionR) != (NULL==m_sessionL));
+	if(NULL==m_sessionR || 0==m_sessionR->m_postingProxy.callerKey_)
+		return TCPS_ERR_CALL_WAS_IGNORED;
+	iscm_IPostingCallerMan& callerMan = iscm_FetchPostingCallerMan();
+	return callerMan.BatchCleanQueue(&m_sessionR->m_postingProxy.callerKey_, 1);
+}
+
+TCPSError PCC_Deploy_S::CleanPostingSendingQueue(
+				IN const PPCC_Deploy_S_* sessions,
+				IN INT_PTR sessionsCount
+				)
+{
+	tcps_SmartArray<PPCC_Deploy_S_, 256> sessions_ar_;
+	for(INT_PTR i=0; i<sessionsCount; ++i)
+	{
+		if(NULL == sessions[i])
+		{
+			ASSERT_EX(false, tcps_GetErrTxt(TCPS_ERR_INVALID_PARAM));
+			continue;
+		}
+		if(NULL==sessions[i]->m_sessionR || 0==sessions[i]->m_sessionR->m_postingProxy.callerKey_)
+			continue;
+		sessions_ar_.push_back(sessions[i]);
+	}
+	if(0 == sessions_ar_.size())
+		return TCPS_OK;
+
+	// 准备callerKeys
+	tcps_SmartArray<INT32, 256> callerKey_ar_;
+	callerKey_ar_.resize(sessions_ar_.size());
+	for(INT_PTR i=0; i<(INT_PTR)sessions_ar_.size(); ++i)
+		callerKey_ar_[i] = sessions_ar_[i]->m_sessionR->m_postingProxy.callerKey_;
+
+	iscm_IPostingCallerMan& callerMan = iscm_FetchPostingCallerMan();
+	return callerMan.BatchCleanQueue(callerKey_ar_.Get(), (int)callerKey_ar_.size());
+}
+
+class PCC_Deploy_LS : public IPCC_Deploy_LocalMethod
+{
+private:
+	PCC_Deploy_LS(const PCC_Deploy_LS&);
+	PCC_Deploy_LS& operator= (const PCC_Deploy_LS&);
+
+private:
+	NP_SCATTEREDSessionMaker& m_sessionMaker;
+	IPCC_Deploy_LocalCallback* const m_callback;
+	PCC_Deploy_S* const m_method;
+	TCPSError m_connectError;
+	INT32 m_sessionKey;
+
+public:
+	TCPSError GetConnectError() const
+		{	return m_connectError;	}
+
+public:
+	PCC_Deploy_LS(const IPP& clientID_IPP, NP_SCATTEREDSessionMaker& sessionMaker, IPCC_Deploy_LocalCallback* callbackHandler)
+		: m_sessionMaker(sessionMaker)
+		, m_callback(callbackHandler)
+		, m_method(tcps_NewEx(PCC_Deploy_S, (m_sessionMaker, NULL, callbackHandler)))
+		, m_connectError(TCPS_ERROR)
+		, m_sessionKey(0)
+	{
+		INT32 sessionCount;
+		m_sessionMaker.OnSessionConnect_(&m_sessionKey, sessionCount);
+		m_connectError = m_method->OnConnected(m_sessionKey, clientID_IPP, sessionCount);
+		if(TCPS_OK == m_connectError)
+		{
+			if(m_callback)
+				m_method->OnCallbackReady();
+			m_method->OnPostingCallReady();
+			m_sessionMaker.RegisterLocalSession_(m_callback);
+		}
+	}
+	virtual ~PCC_Deploy_LS()
+	{
+		if(TCPS_OK == m_connectError)
+			m_sessionMaker.UnregisterLocalSession_(m_callback);
+		m_sessionMaker.Unregister(m_method);
+		if(INVALID_OSTHREADID==m_method->m_closingTID_L.tid || m_method->m_closingTID_L.tid!=OSThreadSelf())
+			m_method->OnPeerBroken(m_sessionKey, TCPS_ANY_IPP, m_connectError);
+		m_method->OnClose(m_sessionKey, TCPS_ANY_IPP, m_connectError);
+		m_sessionMaker.OnSessionClosed_();
+		m_method->~PCC_Deploy_S();
+		tcps_Free(m_method);
+	}
+	virtual void DeleteThis()
+		{	tcps_Delete(this);	}
+
+	virtual PROC FindMethod_(
+				IN const char* name,
+				IN INT_PTR nameLen /*= -1*/,
+				IN const char* type,
+				IN INT_PTR typeLen /*= -1*/
+				)
+	{
+		if(NULL == name)
+		{
+			ASSERT(false);
+			return NULL;
+		}
+
+		// 对OnStreamedCall_L_()特殊处理
+		if(nameLen<0 && 0==strcmp("OnStreamedCall_L_", name))
+			return (PROC)&OnStreamedCall_L_;
+
+		if(NULL == type)
+		{
+			ASSERT(false);
+			return NULL;
+		}
+
+		InitializeAllCallsTypeInfo_();
+		typedef TwoItems<CPtrStrA, PROC> FuncPair;
+		typedef CQuickStringMap<CPtrStrA, FuncPair, QSS_Traits<14> > MethodMap_;
+		static MethodMap_* s_mdMap = NULL;
+		if(NULL == s_mdMap)
+		{
+			IscmRPCGlobalLocker locker;
+			if(NULL == s_mdMap)
+			{
+				static MethodMap_ s_mdMapObj;
+				MethodMap_& mdMap = s_mdMapObj;
+				mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("Login"), FuncPair(CPtrStrA(s_PCC_Deploy_Login_TypeInfo_, s_PCC_Deploy_Login_TypeInfo_len_), (PROC)&Login)));
+				mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("Logout"), FuncPair(CPtrStrA(s_PCC_Deploy_Logout_TypeInfo_, s_PCC_Deploy_Logout_TypeInfo_len_), (PROC)&Logout)));
+				mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("CreateTrunk"), FuncPair(CPtrStrA(s_PCC_Deploy_CreateTrunk_TypeInfo_, s_PCC_Deploy_CreateTrunk_TypeInfo_len_), (PROC)&CreateTrunk)));
+				mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("RemoveTrunk"), FuncPair(CPtrStrA(s_PCC_Deploy_RemoveTrunk_TypeInfo_, s_PCC_Deploy_RemoveTrunk_TypeInfo_len_), (PROC)&RemoveTrunk)));
+				mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("ListTrunk"), FuncPair(CPtrStrA(s_PCC_Deploy_ListTrunk_TypeInfo_, s_PCC_Deploy_ListTrunk_TypeInfo_len_), (PROC)&ListTrunk)));
+				mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("AddAuthCenter"), FuncPair(CPtrStrA(s_PCC_Deploy_AddAuthCenter_TypeInfo_, s_PCC_Deploy_AddAuthCenter_TypeInfo_len_), (PROC)&AddAuthCenter)));
+				mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("RemoveAuthCenter"), FuncPair(CPtrStrA(s_PCC_Deploy_RemoveAuthCenter_TypeInfo_, s_PCC_Deploy_RemoveAuthCenter_TypeInfo_len_), (PROC)&RemoveAuthCenter)));
+				mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("ListAuthCenter"), FuncPair(CPtrStrA(s_PCC_Deploy_ListAuthCenter_TypeInfo_, s_PCC_Deploy_ListAuthCenter_TypeInfo_len_), (PROC)&ListAuthCenter)));
+				mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("FindAuthCenter"), FuncPair(CPtrStrA(s_PCC_Deploy_FindAuthCenter_TypeInfo_, s_PCC_Deploy_FindAuthCenter_TypeInfo_len_), (PROC)&FindAuthCenter)));
+				mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("AddModule"), FuncPair(CPtrStrA(s_PCC_Deploy_AddModule_TypeInfo_, s_PCC_Deploy_AddModule_TypeInfo_len_), (PROC)&AddModule)));
+				mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("AddModuleFile"), FuncPair(CPtrStrA(s_PCC_Deploy_AddModuleFile_TypeInfo_, s_PCC_Deploy_AddModuleFile_TypeInfo_len_), (PROC)&AddModuleFile)));
+				mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("RemoveModule"), FuncPair(CPtrStrA(s_PCC_Deploy_RemoveModule_TypeInfo_, s_PCC_Deploy_RemoveModule_TypeInfo_len_), (PROC)&RemoveModule)));
+				mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("RemoveModuleFiles"), FuncPair(CPtrStrA(s_PCC_Deploy_RemoveModuleFiles_TypeInfo_, s_PCC_Deploy_RemoveModuleFiles_TypeInfo_len_), (PROC)&RemoveModuleFiles)));
+				mdMap.insert(std::make_pair(CONST_STR_TO_PTRSTR_A("ListModules"), FuncPair(CPtrStrA(s_PCC_Deploy_ListModules_TypeInfo_, s_PCC_Deploy_ListModules_TypeInfo_len_), (PROC)&ListModules)));
+				s_mdMap = &mdMap;
+			}
+		}
+
+		MethodMap_::iterator it = s_mdMap->find(name, nameLen);
+		if(s_mdMap->end() == it)
+			return NULL;
+		const CPtrStrA& ps = it->second.first;
+		if(0 != ps.Compare(type, typeLen))
+			return NULL;
+		return it->second.second;
+	}
+
+private:
+	static TCPSError OnStreamedCall_L_(
+				IN void* sessionObj,
+				IN const char* methodName,
+				IN INT_PTR nameLen /*= -1*/,
+				IN const void* data /*= NULL*/,
+				IN INT_PTR dataLen /*>= 0*/,
+				OUT LPVOID* replyData /*= NULL*/,
+				OUT INT_PTR* replyLen /*= NULL*/
+				)
+	{	return ((PCC_Deploy_LS*)sessionObj)->m_method->OnStreamedCall_L_(
+					methodName,
+					nameLen,
+					data,
+					dataLen,
+					replyData,
+					replyLen
+					);
+	}
+
+private:
+	static TCPSError Login(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& ticket
+				) method
+	{	return ((PCC_Deploy_LS*)sessionObj_wrap)->m_method->Login(
+					ticket
+					);
+	}
+
+	static TCPSError Logout(
+				IN void* sessionObj_wrap
+				) method
+	{	return ((PCC_Deploy_LS*)sessionObj_wrap)->m_method->Logout(
+					);
+	}
+
+	static TCPSError CreateTrunk(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk
+				) method
+	{	return ((PCC_Deploy_LS*)sessionObj_wrap)->m_method->CreateTrunk(
+					trunk
+					);
+	}
+
+	static TCPSError RemoveTrunk(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk
+				) method
+	{	return ((PCC_Deploy_LS*)sessionObj_wrap)->m_method->RemoveTrunk(
+					trunk
+					);
+	}
+
+	static TCPSError ListTrunk(
+				IN void* sessionObj_wrap,
+				OUT tcps_Array<tcps_String>& trunks
+				) method
+	{	return ((PCC_Deploy_LS*)sessionObj_wrap)->m_method->ListTrunk(
+					trunks
+					);
+	}
+
+	static TCPSError AddAuthCenter(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleTag& authTag,
+				IN const tcps_Array<PCC_ModuleFile>& files
+				) method
+	{	return ((PCC_Deploy_LS*)sessionObj_wrap)->m_method->AddAuthCenter(
+					trunk,
+					authTag,
+					files
+					);
+	}
+
+	static TCPSError RemoveAuthCenter(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleTag& authTag
+				) method
+	{	return ((PCC_Deploy_LS*)sessionObj_wrap)->m_method->RemoveAuthCenter(
+					trunk,
+					authTag
+					);
+	}
+
+	static TCPSError ListAuthCenter(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				OUT tcps_Array<PCC_ModuleTag>& authTags
+				) method
+	{	return ((PCC_Deploy_LS*)sessionObj_wrap)->m_method->ListAuthCenter(
+					trunk,
+					authTags
+					);
+	}
+
+	static TCPSError FindAuthCenter(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleTag& authTag
+				) method
+	{	return ((PCC_Deploy_LS*)sessionObj_wrap)->m_method->FindAuthCenter(
+					trunk,
+					authTag
+					);
+	}
+
+	static TCPSError AddModule(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				IN const PCC_ModuleProperty& moduleProperty,
+				IN const tcps_Array<PCC_ModuleFile>& moudleFiles,
+				OUT INT64& moduleKey
+				) method
+	{	return ((PCC_Deploy_LS*)sessionObj_wrap)->m_method->AddModule(
+					trunk,
+					moduleProperty,
+					moudleFiles,
+					moduleKey
+					);
+	}
+
+	static TCPSError AddModuleFile(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				IN INT64 moduleKey,
+				IN PCC_ModuleFileType fileType,
+				IN const tcps_Array<PCC_ModuleFile>& moduleFiles
+				) method
+	{	return ((PCC_Deploy_LS*)sessionObj_wrap)->m_method->AddModuleFile(
+					trunk,
+					moduleKey,
+					fileType,
+					moduleFiles
+					);
+	}
+
+	static TCPSError RemoveModule(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				IN INT64 moduleKey
+				) method
+	{	return ((PCC_Deploy_LS*)sessionObj_wrap)->m_method->RemoveModule(
+					trunk,
+					moduleKey
+					);
+	}
+
+	static TCPSError RemoveModuleFiles(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				IN INT64 moduleKey,
+				IN INT32 fileType
+				) method
+	{	return ((PCC_Deploy_LS*)sessionObj_wrap)->m_method->RemoveModuleFiles(
+					trunk,
+					moduleKey,
+					fileType
+					);
+	}
+
+	static TCPSError ListModules(
+				IN void* sessionObj_wrap,
+				IN const tcps_String& trunk,
+				OUT tcps_Array<PCC_ModulePropWithKey>& modulesInfo
+				) method
+	{	return ((PCC_Deploy_LS*)sessionObj_wrap)->m_method->ListModules(
+					trunk,
+					modulesInfo
+					);
+	}
+};
+
+TCPSError MakeLocalSession_PCC_Deploy__(
+			IN const IPP& clientID_IPP,
+			IN NP_SCATTEREDSessionMaker& sessionMaker,
+			OUT IPCC_Deploy_LocalMethod*& methodHandler,
+			IN IPCC_Deploy_LocalCallback* callbackHandler
+			)
+{
+	PCC_Deploy_LS* session = tcps_NewEx(PCC_Deploy_LS, (clientID_IPP, sessionMaker, callbackHandler));
 	if(NULL == session)
 		return TCPS_ERR_OUT_OF_MEMORY;
 	TCPSError err = session->GetConnectError();

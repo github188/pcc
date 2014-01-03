@@ -1,12 +1,9 @@
+ï»?
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ServeNP_SCATTERED_2008", "ServeNP_SCATTERED_2008.vcproj", "{9B8A6DF9-F5BE-4564-A1E6-D06D5262CC79}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClientNP_SCATTERED_2008", "client\ClientNP_SCATTERED_2008.vcproj", "{F15CBADD-2945-4EB2-A87A-6E7D5DDD6319}"
-EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "PCC_SETUP", "..\PCC_SETUP\PCC_SETUP.vdproj", "{6223E2C6-BEA0-49F5-B07A-3C9CDA70082B}"
-EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "PCC_Setup_R", "..\PCC_Setup_R\PCC_Setup_R.vdproj", "{DD90774B-ED73-47D9-90B3-F934F4649C5C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,14 +29,6 @@ Global
 		{F15CBADD-2945-4EB2-A87A-6E7D5DDD6319}.Release|Win32.Build.0 = Release|Win32
 		{F15CBADD-2945-4EB2-A87A-6E7D5DDD6319}.Release|x64.ActiveCfg = Release|x64
 		{F15CBADD-2945-4EB2-A87A-6E7D5DDD6319}.Release|x64.Build.0 = Release|x64
-		{6223E2C6-BEA0-49F5-B07A-3C9CDA70082B}.Debug|Win32.ActiveCfg = Debug
-		{6223E2C6-BEA0-49F5-B07A-3C9CDA70082B}.Debug|x64.ActiveCfg = Debug
-		{6223E2C6-BEA0-49F5-B07A-3C9CDA70082B}.Release|Win32.ActiveCfg = Release
-		{6223E2C6-BEA0-49F5-B07A-3C9CDA70082B}.Release|x64.ActiveCfg = Release
-		{DD90774B-ED73-47D9-90B3-F934F4649C5C}.Debug|Win32.ActiveCfg = Debug
-		{DD90774B-ED73-47D9-90B3-F934F4649C5C}.Debug|x64.ActiveCfg = Debug
-		{DD90774B-ED73-47D9-90B3-F934F4649C5C}.Release|Win32.ActiveCfg = Release
-		{DD90774B-ED73-47D9-90B3-F934F4649C5C}.Release|x64.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
