@@ -64,7 +64,6 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(NoInherit)"
 				OutputFile="D:\niwho-work\new_pgrid\job_center\Debug.2008\ServeNP_SCATTERED.exe"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -1302,9 +1301,21 @@
 				RelativePath=".\NW\Singleton.h"
 				>
 			</File>
+			<File
+				RelativePath=".\TrunkManage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TrunkManage.h"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath=".\Makefile"
+			>
+		</File>
+		<File
+			RelativePath=".\sqlite382.lib"
 			>
 		</File>
 	</Files>

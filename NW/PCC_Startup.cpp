@@ -6,6 +6,7 @@
 #include "nplog.h"
 #include "modulemanage.h"
 #include "npfdk.h"
+#include "TrunkManage.h"
 class PCC_Scatter_S;
 CPCC_Startup::CPCC_Startup(void)
 {
@@ -29,6 +30,8 @@ int CPCC_Startup::Startup()
 //	pgrid_util::Singleton<CScatteredManage>::instance().mytest();
 //	pgrid_util::Singleton<CScatteredManage>::instance().init();
 
+	pgrid_util::Singleton<CTrunkManage>::instance();//.init();//
+	return 0;
 	//启动jc服务
 	char jobcenterdir[MAX_PATH];
 	GetModuleFileName(NULL,jobcenterdir,MAX_PATH);
@@ -95,5 +98,6 @@ int CPCC_Startup::Startup()
 	pgrid_util::Singleton<CScatteredManage>::instance().init();//
 	//scatterd 模块目录
 
+	pgrid_util::Singleton<CTrunkManage>::instance();//.init();//
 	return 0;
 }

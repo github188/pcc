@@ -524,7 +524,7 @@ private:
 
 public:
 	// TODO: 可以在此处添加PCC_Deploy的自定义成员
-
+	CPCCHandler m_handler;
 private:
 	PCC_Deploy_S(NP_SCATTEREDSessionMaker& sessionMaker, NP_SCATTEREDSession* sessionR, IPCC_Deploy_LocalCallback* sessionL);
 	~PCC_Deploy_S();

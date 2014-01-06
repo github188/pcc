@@ -8,6 +8,7 @@
 #include "nplog.h"
 #include "singleton.h"
 #include "ipcvt.h"
+#include "TrunkManage.h"
 /////////////////////////////////////////////////////////////////////
 // interface GRID_User
 
@@ -389,14 +390,16 @@ TCPSError PCC_Deploy_S::Login(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return m_handler.Login(ticket);
+	
 }
 
 TCPSError PCC_Deploy_S::Logout(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return m_handler.Logout();
+	
 }
 
 TCPSError PCC_Deploy_S::CreateTrunk(
@@ -404,7 +407,7 @@ TCPSError PCC_Deploy_S::CreateTrunk(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().CreateTrunk(trunk);
 }
 
 TCPSError PCC_Deploy_S::RemoveTrunk(
@@ -412,7 +415,7 @@ TCPSError PCC_Deploy_S::RemoveTrunk(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().RemoveTrunk(trunk);
 }
 
 TCPSError PCC_Deploy_S::ListTrunk(
@@ -420,7 +423,7 @@ TCPSError PCC_Deploy_S::ListTrunk(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().ListTrunk(trunks);
 }
 
 TCPSError PCC_Deploy_S::AddAuthCenter(
@@ -430,7 +433,7 @@ TCPSError PCC_Deploy_S::AddAuthCenter(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().AddAuthCenter(trunk,authTag,files);
 }
 
 TCPSError PCC_Deploy_S::RemoveAuthCenter(
@@ -439,7 +442,7 @@ TCPSError PCC_Deploy_S::RemoveAuthCenter(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().RemoveAuthCenter(trunk,authTag);
 }
 
 TCPSError PCC_Deploy_S::ListAuthCenter(
@@ -448,7 +451,7 @@ TCPSError PCC_Deploy_S::ListAuthCenter(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().ListAuthCenter(trunk,authTags);
 }
 
 TCPSError PCC_Deploy_S::FindAuthCenter(
@@ -457,7 +460,7 @@ TCPSError PCC_Deploy_S::FindAuthCenter(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().FindAuthCenter(trunk,authTag);
 }
 
 TCPSError PCC_Deploy_S::AddModule(
@@ -468,7 +471,7 @@ TCPSError PCC_Deploy_S::AddModule(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().AddModule(trunk,moduleProperty,moudleFiles,moduleKey);
 }
 
 TCPSError PCC_Deploy_S::AddModuleFile(
@@ -479,7 +482,7 @@ TCPSError PCC_Deploy_S::AddModuleFile(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().AddModuleFile(trunk,moduleKey,fileType,moduleFiles);
 }
 
 TCPSError PCC_Deploy_S::RemoveModule(
@@ -488,7 +491,7 @@ TCPSError PCC_Deploy_S::RemoveModule(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().RemoveModule(trunk,moduleKey);
 }
 
 TCPSError PCC_Deploy_S::RemoveModuleFiles(
@@ -498,7 +501,7 @@ TCPSError PCC_Deploy_S::RemoveModuleFiles(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().RemoveModuleFiles(trunk,moduleKey,fileType);
 }
 
 TCPSError PCC_Deploy_S::ListModules(
@@ -507,7 +510,7 @@ TCPSError PCC_Deploy_S::ListModules(
 				) method
 {
 	// TODO: 请实现此函数
-	return TCPS_ERR_NOT_IMPLEMENTED;
+	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().ListModules(trunk,modulesInfo);
 }
 
 /////////////////////////////////////////////////////////////////////
