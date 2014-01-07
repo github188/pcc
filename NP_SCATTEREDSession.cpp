@@ -348,6 +348,7 @@ TCPSError PCC_Deploy_S::OnConnected(
 	// TODO: 请添加接口PCC_Deploy的连接后处理
 
 	NPLogInfo(("PCC_Deploy_S::OnConnected(%d, %s, %d)", sessionKey, IPP_TO_STR_A(peerID_IPP), sessionCount));
+	m_client_ipp = peerID_IPP;
 	return TCPS_OK;
 }
 
@@ -390,7 +391,15 @@ TCPSError PCC_Deploy_S::Login(
 				) method
 {
 	// TODO: 请实现此函数
-	return m_handler.Login(ticket);
+	m_gridConn.m_user = "netposa";
+	m_gridConn.m_pass = "netposa";
+
+	IPP serverIPP;
+	
+	serverIPP.ip_ = GetLocalIP();//inet_addr("127.0.0.1");//连接本机
+	serverIPP.port_ = 9012;
+	//m_gridConn.m_service = m_psenssion;
+	return m_gridConn.SetServeIPP(serverIPP,0,m_client_ipp);//
 	
 }
 
@@ -398,7 +407,7 @@ TCPSError PCC_Deploy_S::Logout(
 				) method
 {
 	// TODO: 请实现此函数
-	return m_handler.Logout();
+	return m_gridConn.Logout();
 	
 }
 
