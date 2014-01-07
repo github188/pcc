@@ -479,7 +479,7 @@ TCPSError PCC_Deploy_S::AddModule(
 				OUT INT64& moduleKey
 				) method
 {
-	// TODO: 请实现此函数
+	// TODO: 请实现此函'数
 	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().AddModule(trunk,moduleProperty,moudleFiles,moduleKey);
 }
 
