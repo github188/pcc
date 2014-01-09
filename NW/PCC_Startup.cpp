@@ -29,9 +29,48 @@ int CPCC_Startup::Startup()
 //	pgrid_util::Singleton<CScatteredManage>::instance().CopyModules("D:/niwho-work/new_pgrid/job_center/Debug.2008/ScatterProgams/1000001#PCC_ImgProc_Phimix-1.0",moudleFiles);	
 //	pgrid_util::Singleton<CScatteredManage>::instance().mytest();
 //	pgrid_util::Singleton<CScatteredManage>::instance().init();
+//_s debug
+//	int rt;
+//	pgrid_util::Singleton<CTrunkManage>::instance();//.init();//
+//	tcps_String trunk;
+//	trunk.Assign("wtttt");
+    //int rt = pgrid_util::Singleton<CTrunkManage>::instance().CreateTrunk( trunk); 
+	//rt = pgrid_util::Singleton<CTrunkManage>::instance().RemoveTrunk(trunk);
+	//rt = pgrid_util::Singleton<CTrunkManage>::instance().CreateTrunk( trunk); 
+//	tcps_Array<tcps_String> trunks; 
+//	rt = pgrid_util::Singleton<CTrunkManage>::instance().ListTrunk(trunks);
 
-	pgrid_util::Singleton<CTrunkManage>::instance();//.init();//
-	return 0;
+//	PCC_ModuleProperty prop;
+//	prop.moduleType = PCC_MODULE_IMGPROC;
+//	prop.moduleTag.name = "compppp";
+//	prop.moduleTag.version.major = 2;
+//	prop.moduleTag.version.minor = 1;
+//	FILE *fp;
+//	fp = fopen(
+//		"C:/Users/niwho/Documents/My RTX Files/niwho/face_togpl(1).json"//face_togpl(1)test.json
+//		,"rb"); 
+//	fseek(fp,0,SEEK_END);//48：6254
+
+//	long file_len = ftell(fp);
+//	fseek(fp,0,SEEK_SET);
+	
+//	tcps_Array<PCC_ModuleFile> moudleFiles;
+//	moudleFiles.Resize(1);
+//	moudleFiles[0].data.Resize(file_len);
+//	fread(moudleFiles[0].data.Get(),file_len,1,fp);
+//	moudleFiles[0].name = "face_togpl(1).json";
+//	fclose(fp);
+//	INT64 moduleKey =1;
+//	rt = pgrid_util::Singleton<CTrunkManage>::instance().AddModule(trunk,prop,moudleFiles,moduleKey);
+	//const tcps_String& trunk,INT64 moduleKey,MY_NP_GridUserClient &m_gridConn
+//	MY_NP_GridUserClient m_gridConn;
+//	rt = pgrid_util::Singleton<CTrunkManage>::instance().RemoveModule(trunk,moduleKey,m_gridConn);
+	//const tcps_String& trunk,tcps_Array<PCC_ModulePropWithKey>& modulesInfo
+//	rt = pgrid_util::Singleton<CTrunkManage>::instance().AddModule(trunk,prop,moudleFiles,moduleKey);
+//	tcps_Array<PCC_ModulePropWithKey> modulesInfo;
+//	rt = pgrid_util::Singleton<CTrunkManage>::instance().ListModules(trunk,modulesInfo);
+//	return 0;
+//_e debug
 	//启动jc服务
 	char jobcenterdir[MAX_PATH];
 	GetModuleFileName(NULL,jobcenterdir,MAX_PATH);
@@ -43,6 +82,8 @@ int CPCC_Startup::Startup()
 		NPLogError(("启动网格服务失败"));
 		return -1;
 	}
+
+//	HANDLE hd = OpenProcess(PROCESS_ALL_ACCESS, false, id);
 	Sleep(500);//等待grid启动完成
 	//获取jc模块
 	//使用单件模式管理全局变量

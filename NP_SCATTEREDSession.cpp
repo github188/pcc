@@ -348,8 +348,8 @@ TCPSError PCC_Deploy_S::OnConnected(
 	// TODO: 请添加接口PCC_Deploy的连接后处理
 
 	NPLogInfo(("PCC_Deploy_S::OnConnected(%d, %s, %d)", sessionKey, IPP_TO_STR_A(peerID_IPP), sessionCount));
-	m_client_ipp = peerID_IPP;
-	return TCPS_OK;
+	
+	return m_deploy.OnConnected(sessionKey,peerID_IPP,sessionCount);
 }
 
 void PCC_Deploy_S::OnCallbackReady()
@@ -384,22 +384,14 @@ void PCC_Deploy_S::OnClose(
 {
 	NPLogInfo(("PCC_Deploy_S::OnClose(%d, %s, %s(%d))", sessionKey, IPP_TO_STR_A(peerID_IPP), tcps_GetErrTxt(cause), cause));
 	// TODO: 请添加接口PCC_Deploy的连接关闭处理
+	m_deploy.OnClose(sessionKey,peerID_IPP,cause);
 }
 
 TCPSError PCC_Deploy_S::Login(
 				IN const tcps_String& ticket
 				) method
 {
-	// TODO: 请实现此函数
-	m_gridConn.m_user = "netposa";
-	m_gridConn.m_pass = "netposa";
-
-	IPP serverIPP;
-	
-	serverIPP.ip_ = GetLocalIP();//inet_addr("127.0.0.1");//连接本机
-	serverIPP.port_ = 9012;
-	//m_gridConn.m_service = m_psenssion;
-	return m_gridConn.SetServeIPP(serverIPP,0,m_client_ipp);//
+	return m_deploy.Login(ticket);	
 	
 }
 
@@ -407,7 +399,7 @@ TCPSError PCC_Deploy_S::Logout(
 				) method
 {
 	// TODO: 请实现此函数
-	return m_gridConn.Logout();
+	return m_deploy.Logout();
 	
 }
 
@@ -416,7 +408,7 @@ TCPSError PCC_Deploy_S::CreateTrunk(
 				) method
 {
 	// TODO: 请实现此函数
-	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().CreateTrunk(trunk);
+	return m_deploy.CreateTrunk(trunk);
 }
 
 TCPSError PCC_Deploy_S::RemoveTrunk(
@@ -424,7 +416,7 @@ TCPSError PCC_Deploy_S::RemoveTrunk(
 				) method
 {
 	// TODO: 请实现此函数
-	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().RemoveTrunk(trunk);
+	return m_deploy.RemoveTrunk(trunk);
 }
 
 TCPSError PCC_Deploy_S::ListTrunk(
@@ -432,7 +424,7 @@ TCPSError PCC_Deploy_S::ListTrunk(
 				) method
 {
 	// TODO: 请实现此函数
-	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().ListTrunk(trunks);
+	return m_deploy.ListTrunk(trunks);
 }
 
 TCPSError PCC_Deploy_S::AddAuthCenter(
@@ -442,7 +434,7 @@ TCPSError PCC_Deploy_S::AddAuthCenter(
 				) method
 {
 	// TODO: 请实现此函数
-	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().AddAuthCenter(trunk,authTag,files);
+	return m_deploy.AddAuthCenter(trunk,authTag,files);
 }
 
 TCPSError PCC_Deploy_S::RemoveAuthCenter(
@@ -451,7 +443,7 @@ TCPSError PCC_Deploy_S::RemoveAuthCenter(
 				) method
 {
 	// TODO: 请实现此函数
-	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().RemoveAuthCenter(trunk,authTag);
+	return m_deploy.RemoveAuthCenter(trunk,authTag);
 }
 
 TCPSError PCC_Deploy_S::ListAuthCenter(
@@ -460,7 +452,7 @@ TCPSError PCC_Deploy_S::ListAuthCenter(
 				) method
 {
 	// TODO: 请实现此函数
-	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().ListAuthCenter(trunk,authTags);
+	return m_deploy.ListAuthCenter(trunk,authTags);
 }
 
 TCPSError PCC_Deploy_S::FindAuthCenter(
@@ -469,7 +461,7 @@ TCPSError PCC_Deploy_S::FindAuthCenter(
 				) method
 {
 	// TODO: 请实现此函数
-	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().FindAuthCenter(trunk,authTag);
+	return m_deploy.FindAuthCenter(trunk,authTag);
 }
 
 TCPSError PCC_Deploy_S::AddModule(
@@ -480,7 +472,7 @@ TCPSError PCC_Deploy_S::AddModule(
 				) method
 {
 	// TODO: 请实现此函'数
-	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().AddModule(trunk,moduleProperty,moudleFiles,moduleKey);
+	return m_deploy.AddModule(trunk,moduleProperty,moudleFiles,moduleKey);
 }
 
 TCPSError PCC_Deploy_S::AddModuleFile(
@@ -491,7 +483,7 @@ TCPSError PCC_Deploy_S::AddModuleFile(
 				) method
 {
 	// TODO: 请实现此函数
-	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().AddModuleFile(trunk,moduleKey,fileType,moduleFiles);
+	return m_deploy.AddModuleFile(trunk,moduleKey,fileType,moduleFiles);
 }
 
 TCPSError PCC_Deploy_S::RemoveModule(
@@ -500,7 +492,7 @@ TCPSError PCC_Deploy_S::RemoveModule(
 				) method
 {
 	// TODO: 请实现此函数
-	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().RemoveModule(trunk,moduleKey);
+	return m_deploy.RemoveModule(trunk,moduleKey);
 }
 
 TCPSError PCC_Deploy_S::RemoveModuleFiles(
@@ -510,7 +502,7 @@ TCPSError PCC_Deploy_S::RemoveModuleFiles(
 				) method
 {
 	// TODO: 请实现此函数
-	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().RemoveModuleFiles(trunk,moduleKey,fileType);
+	return m_deploy.RemoveModuleFiles(trunk,moduleKey,fileType);
 }
 
 TCPSError PCC_Deploy_S::ListModules(
@@ -519,7 +511,7 @@ TCPSError PCC_Deploy_S::ListModules(
 				) method
 {
 	// TODO: 请实现此函数
-	return (TCPSError)pgrid_util::Singleton<CTrunkManage>::instance().ListModules(trunk,modulesInfo);
+	return m_deploy.ListModules(trunk,modulesInfo);
 }
 
 /////////////////////////////////////////////////////////////////////

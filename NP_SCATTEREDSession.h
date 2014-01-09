@@ -22,7 +22,7 @@
 #include "NP_SCATTEREDTypesDefine.h"
 #include "my_np_griduserclient.h"
 #include "modulemanage.h"
-
+#include "TrunkManage.h"
 class NP_SCATTEREDSession;
 
 //[[begin_iscm]]
@@ -525,8 +525,9 @@ private:
 public:
 	// TODO: 可以在此处添加PCC_Deploy的自定义成员
 	//CPCCHandler m_handler;
-	MY_NP_GridUserClient m_gridConn;
-	IPP m_client_ipp;
+	//MY_NP_GridUserClient m_gridConn;
+	//IPP m_client_ipp;
+	CNPDeploy m_deploy;
 private:
 	PCC_Deploy_S(NP_SCATTEREDSessionMaker& sessionMaker, NP_SCATTEREDSession* sessionR, IPCC_Deploy_LocalCallback* sessionL);
 	~PCC_Deploy_S();
